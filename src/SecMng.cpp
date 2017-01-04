@@ -78,11 +78,9 @@ namespace secmng {
         switch(ev) {
             case MG_EV_HTTP_REQUEST:
                 if(mg_vcmp(&hm->uri, "/login") == 0) {
-                    std::cout << "Handle Login" << std::endl;
                 } else if(mg_vcmp(&hm->uri, "/get_cpu_usage") == 0) {
                 }
                 else {
-                    std::cout << "Serve static content" << std::endl;
                     mg_serve_http(nc, hm, mng->m_httpServerOpts);
                 }
                 break;
