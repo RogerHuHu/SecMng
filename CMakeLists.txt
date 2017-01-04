@@ -24,9 +24,9 @@ IF(CROSS)
 ELSE(CROSS)
     MESSAGE(STATUS "NORMAL COMPILING")
     SET(CMAKE_C_FLAGS_DEBUG "-g -Wall")
-    SET(CMAKE_CXX_FLAGS_DEBUG "-g -Wall")
+    SET(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -std=c++11")
     SET(CMAKE_C_FLAGS_RELEASE "-O2 -Wall")
-    SET(CMAKE_CXX_FLAGS_RELEASE "-O2 -Wall")
+    SET(CMAKE_CXX_FLAGS_RELEASE "-O2 -Wall -std=c++11")
 ENDIF(CROSS)
 
 OPTION(DEBUG "ON for debug or OFF for release" OFF)
@@ -38,14 +38,21 @@ ELSE(DEBUG)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF(DEBUG)
 
-INCLUDE_DIRECTORIES(${SECMNG_SOURCE_DIR}/src)
+INCLUDE_DIRECTORIES(${SECMNG_SOURCE_DIR}/include
+                    ${SECMNG_SOURCE_DIR}/include/mongoose)
 
 #LINK_DIRECTORIES(${SUPERVISOR_SOURCE_DIR}/lib)
 
 SET(SRC_LIST
-    src/mongoose.h
-    src/mongoose.c
-    src/big_upload.c)
+    include/mongoose/mongoose.h
+    src/mongoose/mongoose.c
+#    src/big_upload.c)
+#    src/server.c)
+    include/SecMng.hpp
+    include/Login.hpp
+    src/SecMng.cpp
+    src/Login.cpp
+    src/main.cpp)
 
 ADD_DEFINITIONS("-DMG_ENABLE_HTTP_STREAMING_MULTIPART")
 
