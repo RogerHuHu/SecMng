@@ -5,26 +5,60 @@
  *
  * \author Roger(neverchangehuhu@gmail.com)
  *
- * \date 2017-01-03 
+ * \date 2017-01-05
  */
 
 #include <iostream>
 #include "Login.hpp"
 
-using std::cout;
-using std::endl;
-
 namespace secmng {
-    void Login::HandleLogin(struct mg_connection *nc, struct http_message *hm,
-            const std::string &userNameBody, const std::string &passwdBody) {
-        char buf[100];
-        //Get username and password form variables
-        mg_get_http_var(&hm->body, userNameBody.c_str(), buf, sizeof(buf));
-        std::cout << "User Name: " << buf << std::endl;
-        mg_get_http_var(&hm->body, passwdBody.c_str(), buf, sizeof(buf));
-        std::cout << "Password: " << buf << std::endl; 
-        
-        //Send response
-        mg_printf(nc, "%s", "HTTP/1.1 302 OK\r\nLocation: /\r\n\r\n");
+    //Ctor
+    Login::Login(const std::string &usernameFlag, 
+            const std::string &passwordFlag) {
+        m_usernameFlag = usernameFlag;
+        m_passwordFlag = passwordFlag;
+
+        ptMatch = new PatternMatch();
+    }
+
+    //Dtor
+    Login::~Login() {
+        delete ptMatch;
+    }
+
+    /**
+     * Handle login requests.
+     */
+    bool Login::HandleLogin(const struct http_message *hm) {
+        std::string username, password;
+        if(ExtractAccount(hm, username, password)) {
+            if(username == "hujj" && password == "hujj")
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Extract username and password from request HTTP message.
+     */
+    bool Login::ExtractAccount(const struct http_message *hm, std::string &username,
+            std::string &password) {
+        int idx1, idx2;
+        std::string httpMsg((hm->uri).p);
+        ptMatch->CaculateFail(m_usernameFlag);
+        if((idx1 = ptMatch->Match(httpMsg, m_usernameFlag)) < 0)
+            return false;
+        ptMatch->CaculateFail(m_passwordFlag);
+        if((idx2 = ptMatch->Match(httpMsg, m_passwordFlag)) < 0)
+            return false;
+        username = httpMsg.substr(idx1, idx2 - idx1 - 1 - m_passwordFlag.size()); 
+
+        std::string spStr = "HTTP/1.1";
+        ptMatch->CaculateFail(spStr); 
+        if((idx1 = ptMatch->Match(httpMsg, spStr)) < 0)
+            return false;
+        password = httpMsg.substr(idx2, idx1 - idx2 - 1 - spStr.size());
+            
+        return true;
     }
 }

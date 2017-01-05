@@ -50,8 +50,10 @@ SET(SRC_LIST
 #    src/server.c)
     include/SecMng.hpp
     include/Login.hpp
+    include/PatternMatch.hpp
     src/SecMng.cpp
     src/Login.cpp
+    src/PatternMatch.cpp
     src/main.cpp)
 
 ADD_DEFINITIONS("-DMG_ENABLE_HTTP_STREAMING_MULTIPART")

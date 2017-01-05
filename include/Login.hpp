@@ -5,7 +5,7 @@
  *
  * \author Roger(neverchangehuhu@gmail.com)
  *
- * \date 2017-01-03 
+ * \date 2017-01-05
  */
 
 #ifndef LOGIN_CPP_H
@@ -13,8 +13,9 @@
 
 #include <string>
 #include "mongoose.h"
+#include "PatternMatch.hpp"
 
-using std::string;
+using namespace match;
 
 namespace secmng {
     /**
@@ -23,21 +24,36 @@ namespace secmng {
     class Login {
     public:
         //Ctor
-        Login() {}
+        Login(const std::string &usernameFlag, const std::string &passwordFlag);
 
         //Dtor
-        ~Login() {}
+        ~Login();
 
-        /*
+        /**
          * \brief Handle login requests. 
          *
-         * \param nc            Mongoose connection
-         * \param mh            Http message
-         * \param userNameBody  Username lable name in body of html file
-         * \param passwdBody    Password lable name in body of html file
+         * \param hm  Http message.
+         *
+         * \return Login result true/false.
          */
-        void HandleLogin(struct mg_connection *nc, struct http_message *hm,
-                const std::string &userNameBody, const std::string &passwdBody);
+        bool HandleLogin(const struct http_message *hm);
+    private:
+        /**
+         * \brief Extract username and password from request HTTP message.
+         *
+         * \param hm  Http message.
+         * \param username  Username extract from request HTTP message.
+         * \param password  Password extract from request HTTP message.
+         *
+         * \return Account extract result.
+         */
+        bool ExtractAccount(const struct http_message *hm, std::string &username,
+                std::string &password);
+
+        std::string m_usernameFlag;
+        std::string m_passwordFlag;
+
+        PatternMatch *ptMatch;
     };
 }
 

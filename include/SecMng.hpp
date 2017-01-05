@@ -5,7 +5,7 @@
  *
  * \author Roger(neverchangehuhu@gmail.com)
  *
- * \date 2017-01-03 
+ * \date 2017-01-05
  */
 
 #ifndef SEC_MNG_HPP
@@ -13,6 +13,7 @@
 
 #include <string>
 #include "mongoose.h"
+#include "Login.hpp"
 
 using std::string;
 
@@ -73,12 +74,26 @@ namespace secmng {
          */
         void BroadcastData(struct mg_mgr *mgr);
 
+        /**
+         * \brief To find whether there is a prefix in uri
+         *
+         * \param uri     HTTP request message
+         * \param prefix  
+         *
+         * \return true/false
+         */
+        bool HasPrefix(const struct mg_str *uri, const struct mg_str *prefix);
+
         std::string m_httpPort;
         std::string m_webRootDir;
         struct mg_mgr m_mgr;
         struct mg_connection *m_nc;
         struct mg_serve_http_opts m_httpServerOpts;
         time_t m_lastTime;
+
+        struct mg_str loginPrefix;
+
+        Login *login;
     };
 }
 

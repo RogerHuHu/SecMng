@@ -5,16 +5,12 @@
  *
  * \author Roger(neverchangehuhu@gmail.com)
  *
- * \date 2017-01-03 
+ * \date 2017-01-05
  */
 
 #include <iostream>
 #include <functional>
 #include "SecMng.hpp"
-
-//using std::cerr;
-//using std::cout;
-//using std::endl;
 
 namespace secmng {
     void *instance;
@@ -22,11 +18,17 @@ namespace secmng {
     SecMng::SecMng(const std::string &httpPort, const std::string &webRootDir) {
         m_httpPort = httpPort;
         m_webRootDir = webRootDir;
+
+        loginPrefix = MG_MK_STR("/SecMng/login");
+
+        login = new Login("username=", "password=");
     }
 
     //Dtor
     SecMng::~SecMng() {
         mg_mgr_free(&m_mgr);
+
+        delete login;
     }
 
     /**
@@ -76,12 +78,22 @@ namespace secmng {
         SecMng *mng = (SecMng *)instance;
 
         switch(ev) {
-            case MG_EV_HTTP_REQUEST:
-                if(mg_vcmp(&hm->uri, "/login") == 0) {
+            case MG_EV_HTTP_REQUEST: {
+                if(mng->HasPrefix(&hm->uri, &(mng->loginPrefix))) {
+                    mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+                    if((mng->login)->HandleLogin(hm))
+                        mg_printf_http_chunk(nc, "{\"result\": %d}", 1);
+                    else
+                        mg_printf_http_chunk(nc, "{\"result\": %d}", 0);
+                    mg_send_http_chunk(nc, "", 0);
+                }
+                    
+                if(mg_vcmp(&hm->uri, "SecMng/login") == 0) {
                 } else if(mg_vcmp(&hm->uri, "/get_cpu_usage") == 0) {
                 }
                 else {
                     mg_serve_http(nc, hm, mng->m_httpServerOpts);
+                }
                 }
                 break;
             case MG_EV_SSI_CALL:
@@ -121,5 +133,15 @@ namespace secmng {
      */
     void SecMng::SetInstance(SecMng *inst) {
         instance = (void *)inst;
+    }
+
+    /**
+     * To find whether there is a prefix in uri
+     */
+    bool SecMng::HasPrefix(const struct mg_str *uri, 
+            const struct mg_str *prefix) {
+        if(uri->len >= prefix->len && memcmp(uri->p, prefix->p, prefix->len) == 0)
+            return true;
+        return false;
     }
 }
