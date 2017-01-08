@@ -65,9 +65,9 @@ namespace database {
     }
 
     /**
-     * Insert account to sqlite database
+     * Insert user information to sqlite database
      */
-    bool Database::InsertAccount(const struct AccountInfo acntInfo) {
+    bool Database::InsertUserInfo(const struct UserInfo usrInfo) {
         char *errMsg = 0;
         sqlite3_stmt *stmt;
 
@@ -86,12 +86,12 @@ namespace database {
             return false;
         }
 
-        sqlite3_bind_text(stmt, 1, acntInfo.username.c_str(), 
-                acntInfo.username.size(), SQLITE_STATIC);
-        sqlite3_bind_text(stmt, 2, acntInfo.password.c_str(),
-                acntInfo.password.size(), SQLITE_STATIC);
-        sqlite3_bind_int(stmt, 3, acntInfo.priority); 
-        sqlite3_bind_int(stmt, 4, acntInfo.flag); 
+        sqlite3_bind_text(stmt, 1, usrInfo.username.c_str(), 
+                usrInfo.username.size(), SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 2, usrInfo.password.c_str(),
+                usrInfo.password.size(), SQLITE_STATIC);
+        sqlite3_bind_int(stmt, 3, usrInfo.priority); 
+        sqlite3_bind_int(stmt, 4, usrInfo.flag); 
 
         if(sqlite3_step(stmt) != SQLITE_DONE) {
             sqlite3_finalize(stmt);
@@ -108,16 +108,15 @@ namespace database {
     }
 
     /**
-     * Get account information from database
+     * Get user information from database
      */ 
-    bool Database::GetAccount(struct AccountInfo *acntInfo) {
-        char *errMsg = 0;
+    bool Database::GetUserInfo(struct UserInfo *usrInfo) {
         sqlite3_stmt *stmt;
         std::string sqlRet;
         int cnt = 0;
         
         std::string sqlCmd = "SELECT Username,Password,Priority,Flag FROM users "
-            "WHERE Username='" + acntInfo->username + "'";
+            "WHERE Username='" + usrInfo->username + "'";
         if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), &stmt,
                     NULL) != SQLITE_OK) {
             if(stmt)
@@ -128,11 +127,11 @@ namespace database {
         while(sqlite3_step(stmt) == SQLITE_ROW) {
             cnt++;
             sqlRet = (const char *)sqlite3_column_text(stmt, 0);
-            acntInfo->username = sqlRet != "" ? sqlRet : "NULL";
+            usrInfo->username = sqlRet != "" ? sqlRet : "NULL";
             sqlRet = (const char *)sqlite3_column_text(stmt, 1);
-            acntInfo->password = sqlRet != "" ? sqlRet : "NULL";
-            acntInfo->priority = sqlite3_column_int(stmt, 2);
-            acntInfo->flag = sqlite3_column_int(stmt, 2);
+            usrInfo->password = sqlRet != "" ? sqlRet : "NULL";
+            usrInfo->priority = sqlite3_column_int(stmt, 2);
+            usrInfo->flag = sqlite3_column_int(stmt, 2);
         }
         
         if(stmt)
@@ -141,4 +140,107 @@ namespace database {
         return cnt > 0 ? true : false;
     }
 
+    /**
+     * Create table accounts
+     */
+    bool Database::CreateTableAccounts() {
+        char *errMsg = 0;
+
+        std::string sqlCmd = "CREATE TABLE accounts ("
+            "Id INTEGER PRIMARY KEY AUTOINCREMENT   NOT NULL,"
+            "Flag       INTEGER,"
+            "Target     CHAR(50),"
+            "Username   CHAR(20),"
+            "Password   CHAR(40));";
+
+        if(sqlite3_exec(m_db, sqlCmd.c_str(), NULL, NULL, &errMsg) != SQLITE_OK) {
+            std::cout << errMsg << std::endl;
+            sqlite3_free(errMsg);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Insert account to sqlite database.
+     */
+    bool Database::InsertAccount(const struct Account acnt) {
+        char *errMsg = 0;
+        sqlite3_stmt *stmt;
+
+        std::string sqlCmd = "INSERT INTO accounts(Target,Username,Password"
+               ") VALUES(?,?,?);";
+
+        if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), 
+                    &stmt, NULL) != SQLITE_OK) {
+            std::cout << sqlite3_errmsg(m_db) << std::endl;
+            return false;
+        }
+
+        if(sqlite3_exec(m_db, "BEGIN;", NULL, NULL, &errMsg) != SQLITE_OK) {
+            std::cout << errMsg << std::endl;
+            sqlite3_free(errMsg);
+            return false;
+        }
+
+        sqlite3_bind_text(stmt, 1, acnt.target.c_str(), 
+                acnt.target.size(), SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 2, acnt.username.c_str(),
+                acnt.username.size(), SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 3, acnt.password.c_str(),
+                acnt.password.size(), SQLITE_STATIC);
+
+        if(sqlite3_step(stmt) != SQLITE_DONE) {
+            sqlite3_finalize(stmt);
+            return false;
+        }
+
+        if(sqlite3_exec(m_db, "COMMIT;", NULL, NULL, &errMsg) != SQLITE_OK) {
+            std::cout << errMsg << std::endl;
+            sqlite3_free(errMsg);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get account from sqlite database.
+     */
+    bool Database::GetAccount(std::list<struct Account> &acnts) {
+        sqlite3_stmt *stmt;
+        std::string sqlRet;
+        
+        std::string sqlCmd = "SELECT * Target,Username,Password FROM accounts;";
+        if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), &stmt,
+                    NULL) != SQLITE_OK) {
+            if(stmt)
+                sqlite3_finalize(stmt);
+            return false;
+        }
+
+        while(sqlite3_step(stmt) == SQLITE_ROW) {
+            struct Account acnt;
+            sqlRet = (const char *)sqlite3_column_text(stmt, 0);
+            acnt.target = sqlRet != "" ? sqlRet : "NULL";
+            sqlRet = (const char *)sqlite3_column_text(stmt, 1);
+            acnt.username = sqlRet != "" ? sqlRet : "NULL";
+            sqlRet = (const char *)sqlite3_column_text(stmt, 2);
+            acnt.password = sqlRet != "" ? sqlRet : "NULL";
+            acnts.push_back(acnt);
+        }
+        
+        if(stmt)
+            sqlite3_finalize(stmt);
+        /*
+        for(int i = 0; i < 2; i++) {
+            struct Account acnt;
+            acnt.target = "Test1";
+            acnt.username = "roger";
+            acnt.password = "123";
+            acnts.push_back(acnt);
+        }*/
+        
+        return acnts.size() > 0 ? true : false;
+    }
 }

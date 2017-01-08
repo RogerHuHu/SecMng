@@ -52,10 +52,12 @@ SET(SRC_LIST
     include/Login.hpp
     include/PatternMatch.hpp
     include/Database.hpp
+    include/AccountMng.hpp
     src/SecMng.cpp
     src/Login.cpp
     src/PatternMatch.cpp
     src/Database.cpp
+    src/AccountMng.cpp
     src/main.cpp)
 
 ADD_DEFINITIONS("-DMG_ENABLE_HTTP_STREAMING_MULTIPART")

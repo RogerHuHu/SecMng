@@ -14,6 +14,7 @@
 #include <string>
 #include "mongoose.h"
 #include "Login.hpp"
+#include "AccountMng.hpp"
 
 using std::string;
 
@@ -92,8 +93,10 @@ namespace secmng {
         time_t m_lastTime;
 
         struct mg_str loginPrefix;
+        struct mg_str getSecsPrefix;
 
         Login *login;
+        AccountMng *acntMng;
     };
 }
 

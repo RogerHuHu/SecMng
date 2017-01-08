@@ -5,9 +5,16 @@ using namespace secmng;
 using namespace database;
 
 int main(void) {
+    /*
     SecMng *sec = new SecMng("8000", "../web_root");
     sec->SetInstance(sec);
     sec->Init();
     sec->Run(1000);
-
+    */
+    /*
+    Database *db = new Database("../db/secmng.db");
+    db->SqliteOpen();
+    db->CreateTableAccounts();
+    db->SqliteClose();
+    */
 }

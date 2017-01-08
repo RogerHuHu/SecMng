@@ -13,16 +13,26 @@
 
 #include <string>
 #include <sqlite3.h>
+#include <list>
 
 namespace database {
     /**
-     * \brief Account information struct.
+     * \brief User information struct.
      */
-    struct AccountInfo {
+    struct UserInfo {
         std::string username;
         std::string password;
         int priority;
         int flag;
+    };
+
+    /**
+     * \brief Account information struct.
+     */
+    struct Account {
+        std::string target;
+        std::string username;
+        std::string password;
     };
 
     /**
@@ -57,27 +67,47 @@ namespace database {
         bool CreateTableUsers();
 
         /**
-         * \brief Insert account to sqlite database.
+         * \brief Insert user information to sqlite database.
          *
-         * \param username
-         * \param password
-         * \param priority
-         * \param flag
+         * \param usrInfo
          *
          * \return Add result true/false.
          */
-        bool InsertAccount(const struct AccountInfo acntInfo);
+        bool InsertUserInfo(const struct UserInfo usrInfo);
 
         /**
-         * \brief Get account information from database.
+         * \brief Get user information from database.
          *
-         * \param username
-         * \param password
+         * \param usrInfo
          *
          * \return Database select result true/false.
          */
-        bool GetAccount(struct AccountInfo *acntInfo);
+        bool GetUserInfo(struct UserInfo *usrInfo);
 
+        /**
+         * \brief Create table accounts.
+         *
+         * \return Create result true/false.
+         */
+        bool CreateTableAccounts();
+
+        /**
+         * \brief Insert account to sqlite database.
+         *
+         * \param acnt
+         *
+         * \return Insert result true/false.
+         */
+        bool InsertAccount(const struct Account acnt);
+
+        /**
+         * \brief Get account from sqlite database.
+         *
+         * \param acnt
+         *
+         * \return Database select resutl true/false.
+         */
+        bool GetAccount(std::list<struct Account> &acnts);
     private:
         std::string m_dbPath;
         sqlite3 *m_db;

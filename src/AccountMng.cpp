@@ -1,47 +1,35 @@
 /**
- * \file Login.cpp
+ * \file AccountMng.cpp
  *
- * \brief Implements the functions for login secret management system.
+ * \brief Implements the functions for accounts management.
  *
  * \author Roger(neverchangehuhu@gmail.com)
  *
- * \date 2017-01-05
+ * \date 2017-01-08
  */
 
 #include <iostream>
-#include "Login.hpp"
+#include "AccountMng.hpp"
 
 namespace secmng {
     //Ctor
-    Login::Login(const std::string &usernameFlag, 
-            const std::string &passwordFlag) {
-        m_usernameFlag = usernameFlag;
-        m_passwordFlag = passwordFlag;
-
+    AccountMng::AccountMng() {
         ptMatch = new PatternMatch();
         db = new Database("../db/secmng.db");
     }
 
     //Dtor
-    Login::~Login() {
+    AccountMng::~AccountMng() {
         delete ptMatch;
         delete db;
     }
 
     /**
-     * Handle login requests.
+     * Get accounts from database.
      */
-    bool Login::HandleLogin(const struct http_message *hm) {
-        std::string username, password;
-        if(ExtractUserInfo(hm, username, password)) {
-            struct UserInfo usrInfo;
-            if(db->SqliteOpen()) {
-                usrInfo.username = username;
-                if(db->GetUserInfo(&usrInfo)) {
-                    if(usrInfo.password == password)
-                        return true;
-                }
-            }
+    bool AccountMng::GetAccounts(std::list<struct Account> &acnts) {
+        if(db->GetAccount(acnts)) {
+            return true;
         }
         return false;
     }
@@ -49,7 +37,7 @@ namespace secmng {
     /**
      * Extract username and password from request HTTP message.
      */
-    bool Login::ExtractUserInfo(const struct http_message *hm, std::string &username,
+    bool AccountMng::ExtractAccount(const struct http_message *hm, std::string &username,
             std::string &password) {
         int idx1, idx2;
         std::string httpMsg((hm->uri).p);

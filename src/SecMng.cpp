@@ -20,8 +20,10 @@ namespace secmng {
         m_webRootDir = webRootDir;
 
         loginPrefix = MG_MK_STR("/SecMng/login");
+        getSecsPrefix = MG_MK_STR("/SecMng/GetSecrets");
 
         login = new Login("username=", "password=");
+        acntMng = new AccountMng();
     }
 
     //Dtor
@@ -87,12 +89,26 @@ namespace secmng {
                     else
                         mg_printf_http_chunk(nc, "{\"result\": %d}", 0);
                     mg_send_http_chunk(nc, "", 0);
-                }
-                    
-                if(mg_vcmp(&hm->uri, "SecMng/login") == 0) {
-                } else if(mg_vcmp(&hm->uri, "/get_cpu_usage") == 0) {
-                }
-                else {
+                } else if(mng->HasPrefix(&hm->uri, &(mng->getSecsPrefix))) {
+                    mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+                    string ret = "{\"accounts\": [";
+                    std::list<struct Account> acnts;
+                    if((mng->acntMng)->GetAccounts(acnts)) {
+                        for(std::list<struct Account>::iterator iter = acnts.begin();
+                                iter != acnts.end(); ++iter) {
+                            struct Account acnt = *iter; 
+                            ret += "{\"target\":\"" + acnt.target + 
+                                "\", \"username\":\"" + acnt.username +
+                                "\", \"password\":\"" + acnt.password + "\"},";
+                        }
+                    }
+                    ret = ret.substr(0, ret.size() - 1);
+                    ret += "]}";
+                    std::cout << "acnts.size()2 = " << acnts.size() << std::endl;
+                    std::cout << ret << std::endl;
+                    mg_printf_http_chunk(nc, "%s", ret.c_str());
+                    mg_send_http_chunk(nc, "", 0);
+                } else {
                     mg_serve_http(nc, hm, mng->m_httpServerOpts);
                 }
                 }

@@ -1,17 +1,18 @@
 /**
- * \file Login.hpp
+ * \file AccountMng.hpp
  *
- * \brief Defines the functions for login secret management system.
+ * \brief Defines the functions for accounts management.
  *
  * \author Roger(neverchangehuhu@gmail.com)
  *
- * \date 2017-01-05
+ * \date 2017-01-08
  */
 
-#ifndef LOGIN_CPP_H
-#define LOGIN_CPP_H
+#ifndef ACCOUNT_MNG_HPP_H
+#define ACCOUNT_MNG_HPP_H
 
 #include <string>
+#include <list>
 #include "mongoose.h"
 #include "PatternMatch.hpp"
 #include "Database.hpp"
@@ -21,24 +22,24 @@ using namespace database;
 
 namespace secmng {
     /**
-     * \brief This class is used to handle login requests.
+     * \brief This class is used to manage accounts.
      */
-    class Login {
+    class AccountMng {
     public:
         //Ctor
-        Login(const std::string &usernameFlag, const std::string &passwordFlag);
+        AccountMng();
 
         //Dtor
-        ~Login();
+        ~AccountMng();
 
         /**
-         * \brief Handle login requests. 
+         * \brief Get accounts from database. 
          *
-         * \param hm  Http message.
+         * \param .
          *
-         * \return Login result true/false.
+         * \return Get accounts result true/false.
          */
-        bool HandleLogin(const struct http_message *hm);
+        bool GetAccounts(std::list<struct Account> &acnts);
     private:
         /**
          * \brief Extract username and password from request HTTP message.
@@ -49,7 +50,7 @@ namespace secmng {
          *
          * \return Account extract result.
          */
-        bool ExtractUserInfo(const struct http_message *hm, std::string &username,
+        bool ExtractAccount(const struct http_message *hm, std::string &username,
                 std::string &password);
 
         std::string m_usernameFlag;
@@ -60,4 +61,4 @@ namespace secmng {
     };
 }
 
-#endif //LOGIN_CPP_H
+#endif //ACCOUNT_MNG_HPP_H

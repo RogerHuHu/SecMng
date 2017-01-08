@@ -392,15 +392,14 @@
                             <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-example">
                                 <thead>
                                     <tr>
-                                        <th>目标</th>
-                                        <th>用户名</th>
-                                        <th>密码</th>
+                                        <th>Rendering engine</th>
+                                        <th>Browser</th>
+                                        <th>Platform(s)</th>
                                         <th>Engine version</th>
                                         <th>CSS grade</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tbody-test">
-                                <!--
+                                <tbody>
                                     <tr class="odd gradeX">
                                         <td>Trident</td>
                                         <td>Internet Explorer 4.0</td>
@@ -801,7 +800,6 @@
                                         <td class="center">-</td>
                                         <td class="center">U</td>
                                     </tr>
-                                    -->
                                 </tbody>
                             </table>
                             <!-- /.table-responsive -->
@@ -1133,7 +1131,6 @@
     <script src="../dist/js/sb-admin-2.js"></script>
 
     <!-- Page-Level Demo Scripts - Tables - Use for reference -->
-    <!--
     <script>
     $(document).ready(function() {
         $('#dataTables-example').DataTable({
@@ -1141,8 +1138,6 @@
         });
     });
     </script>
-    -->
-    <script type="text/javascript" src="../js/tables.js"></script>
 
 </body>
 
