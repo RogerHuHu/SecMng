@@ -51,13 +51,17 @@ SET(SRC_LIST
     include/SecMng.hpp
     include/Login.hpp
     include/PatternMatch.hpp
+    include/Database.hpp
     src/SecMng.cpp
     src/Login.cpp
     src/PatternMatch.cpp
+    src/Database.cpp
     src/main.cpp)
 
 ADD_DEFINITIONS("-DMG_ENABLE_HTTP_STREAMING_MULTIPART")
 
 ADD_EXECUTABLE(secmng ${SRC_LIST})
+
+TARGET_LINK_LIBRARIES(secmng sqlite3)
 #TARGET_LINK_LIBRARIES(supervisor sqlite3 pthread crc socklib sock_client serial_port database
-#                      file directory log)
+#file directory log)

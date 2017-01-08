@@ -8,8 +8,8 @@
  * \date 2017-01-05 
  */
 
-#ifndef PATTERN_MATCH_CPP_H
-#define PATTERN_MATCH__CPP_H
+#ifndef PATTERN_MATCH_HPP_H
+#define PATTERN_MATCH_HPP_H
 
 #include <string>
 
@@ -48,4 +48,4 @@ namespace match {
     };
 }
 
-#endif //PATTERN_MATCH_CPP_H
+#endif //PATTERN_MATCH_HPP_H

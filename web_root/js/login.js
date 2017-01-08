@@ -37,10 +37,12 @@
                         data: {username:$('#username').val(), password:$('#password').val()},
                         dataType: 'json',
                         success: function(ret) {
-                            if(ret.result == 1)
+                            if(ret.result == 1) {
                                 show_msg('登录成功！ 正在为您跳转...','/');
-                            else
+                                window.location.href='../html/admin.html';
+                            } else {
                                 show_err_msg('登录失败！用户名或密码错误...');
+                            }
                         },
                         error: function(err) {
                             show_err_msg('登录失败！服务器未响应...');

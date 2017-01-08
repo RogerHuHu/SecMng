@@ -19,11 +19,13 @@ namespace secmng {
         m_passwordFlag = passwordFlag;
 
         ptMatch = new PatternMatch();
+        db = new Database("../db/secmng.db");
     }
 
     //Dtor
     Login::~Login() {
         delete ptMatch;
+        delete db;
     }
 
     /**
@@ -32,8 +34,14 @@ namespace secmng {
     bool Login::HandleLogin(const struct http_message *hm) {
         std::string username, password;
         if(ExtractAccount(hm, username, password)) {
-            if(username == "hujj" && password == "hujj")
-                return true;
+            struct AccountInfo acntInfo;
+            if(db->SqliteOpen()) {
+                acntInfo.username = username;
+                if(db->GetAccount(&acntInfo)) {
+                    if(acntInfo.password == password)
+                        return true;
+                }
+            }
         }
         return false;
     }

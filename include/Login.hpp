@@ -14,8 +14,10 @@
 #include <string>
 #include "mongoose.h"
 #include "PatternMatch.hpp"
+#include "Database.hpp"
 
 using namespace match;
+using namespace database;
 
 namespace secmng {
     /**
@@ -54,6 +56,7 @@ namespace secmng {
         std::string m_passwordFlag;
 
         PatternMatch *ptMatch;
+        Database *db;
     };
 }
 

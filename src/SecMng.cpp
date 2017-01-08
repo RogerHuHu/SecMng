@@ -46,6 +46,7 @@ namespace secmng {
         //Set up HTTP server parameters
         mg_set_protocol_http_websocket(m_nc);
         m_httpServerOpts.document_root = m_webRootDir.c_str();
+        m_httpServerOpts.index_files = "html/login.html";
 
         if(mg_stat(m_httpServerOpts.document_root, &st) != 0) {
             std::cerr << "Cannot find web_root directory, exiting" << std::endl;
