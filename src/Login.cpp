@@ -18,6 +18,7 @@ namespace secmng {
             double sessionTTL) : m_usernameFlag(usernameFlag),
         m_passwordFlag(passwordFlag), m_numSessions(numSessions),
         m_sessionTTL(sessionTTL) {
+            m_sessionCookieName = "SecMngCookie"
 
         ptMatch = new PatternMatch();
         db = new Database("../db/secmng.db");
@@ -36,6 +37,11 @@ namespace secmng {
         std::string username;
         if(CheckPassword(hm, username)) {
             struct Session s = CreateSession(hm, username);
+            //char sheas[100];
+            //snprintf(shead, sizeof(shead),
+            //        "Set-Cookie: %s=%" INT64_X_FMT "; path=/",
+            //        m_sessionCookieName.c_str(), s.id):
+            return true;
         }
         return false;
     }
@@ -141,5 +147,27 @@ namespace secmng {
                 DestroySession(iter);
             }
         }
+    }
+
+    /**
+     * Parses the session cookie and returns the session information
+     */
+    struct Session Login::GetSession(struct http_message *hm) {
+        struct mg_str *cookieHeader = mg_get_http_header(hm, "cookie");
+        if(cookieHeader == NULL) return NULL;
+        char ssid[21];
+        if(!mg_http_parse_header(cookieHeader, m_sessionCookieName,
+                    ssid, sizeof(ssid)))
+            return NULL;
+
+        uint64_t sid = strtoull(ssid, NULL, 16);
+        for(std::list<struct Session>::iterator iter = sessions.begin();
+                iter != sessions.end(); ++iter) {
+            if(iter->id == sid) {
+                iter->lastUsed = mg_time();
+                return *iter;
+            }
+        }
+        return NULL;
     }
 }

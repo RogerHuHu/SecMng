@@ -112,6 +112,7 @@ namespace secmng {
         std::string m_passwordFlag;
         int m_numSessions;
         double m_sessionTTL;
+        const char *m_sessionCookieName;
 
         std::list<struct Session> sessions;
         
