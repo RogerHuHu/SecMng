@@ -14,9 +14,10 @@
 namespace secmng {
     //Ctor
     Login::Login(const std::string &usernameFlag, 
-            const std::string &passwordFlag) {
-        m_usernameFlag = usernameFlag;
-        m_passwordFlag = passwordFlag;
+            const std::string &passwordFlag, int numSessions,
+            double sessionTTL) : m_usernameFlag(usernameFlag),
+        m_passwordFlag(passwordFlag), m_numSessions(numSessions),
+        m_sessionTTL(sessionTTL) {
 
         ptMatch = new PatternMatch();
         db = new Database("../db/secmng.db");
@@ -32,16 +33,9 @@ namespace secmng {
      * Handle login requests.
      */
     bool Login::HandleLogin(const struct http_message *hm) {
-        std::string username, password;
-        if(ExtractUserInfo(hm, username, password)) {
-            struct UserInfo usrInfo;
-            if(db->SqliteOpen()) {
-                usrInfo.username = username;
-                if(db->GetUserInfo(&usrInfo)) {
-                    if(usrInfo.password == password)
-                        return true;
-                }
-            }
+        std::string username;
+        if(CheckPassword(hm, username)) {
+            struct Session s = CreateSession(hm, username);
         }
         return false;
     }
@@ -68,5 +62,84 @@ namespace secmng {
         password = httpMsg.substr(idx2, idx1 - idx2 - 1 - spStr.size());
             
         return true;
+    }
+
+    /**
+     * Check password.
+     */
+    bool Login::CheckPassword(const struct http_message *hm, 
+            std::string &username) {
+        std::string password;
+        if(ExtractUserInfo(hm, username, password)) {
+            struct UserInfo usrInfo;
+            if(db->SqliteOpen()) {
+                usrInfo.username = username;
+                if(db->GetUserInfo(&usrInfo)) {
+                    if(usrInfo.passwor == password) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Creates a new session for user.
+     */
+    struct Session Login::CreateSession(const struct http_message *hm,
+            const std::string &username) {
+        //Find first available slot or use the oldest one.
+        struct Session newS = NULL;
+        struct Session oldestS = sessions.front();
+        std::list<struct Session>::iterator oldestIter;
+        if(sessions.size() > m_numSessions) {
+            for(std::list<struct Session>::iterator iter = sessions.begin();
+                    iter != sessions.end(); ++iter) {
+                if(iter->lastUsed < oldestS.lastUsed) {
+                    oldestS = *iter;
+                    oldestIter = iter;
+                }
+            }
+            DestroySession(oldestIter);
+        }
+        //Initialize new session.
+        newS.created = mg_time();
+        newS.username = username;
+        newS.luckyNumber = rand();
+        //Create an ID by putting various volatiles into a pot and stirring.
+        cs_sha1_ctx ctx;
+        cs_sha1_init(&ctx);
+        cs_sha1_update(&ctx, (const unsigned char *)hm->messege.p,
+                hm->messege.len);
+        cs_sha1_update(&ctx, (const unsigned char *)&newS, sizeof(newS));
+        unsigned char digest[20];
+        cs_sha1_final(digest, &ctx);
+        newS.id = *((uint64_t *)digest);
+        sessions.push_back(newS);
+        return newS;
+    }
+
+    /**
+     * Destroy the session state.
+     */
+    void DestroySession(std::list<struct Session>::iterator *iter) {
+        if(sessions.size() > 0)
+            sessions.erase(iter);
+    }
+
+    /**
+     * Cleans up sessions that have been idle for too long.
+     */
+    void Login::CheckSession() {
+        double threshold = mg_time() - m_sessionTTL;
+        for(std::list<struct Session>::iterator iter = sessions.begin();
+                iter != sessions.end(); ++iter) {
+            if(iter->id != 0 && iter->lastUsed < threshold) {
+                std::cout << "Session " + iter->id + " " + iter->username + 
+                    " closed due to idleness." << std::endl;
+                DestroySession(iter);
+            }
+        }
     }
 }
