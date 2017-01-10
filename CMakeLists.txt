@@ -41,7 +41,7 @@ ENDIF(DEBUG)
 INCLUDE_DIRECTORIES(${SECMNG_SOURCE_DIR}/include
                     ${SECMNG_SOURCE_DIR}/include/mongoose)
 
-LINK_DIRECTORIES(${SECMNG_SOURCE_DIR}/lib)
+#LINK_DIRECTORIES(${SECMNG_SOURCE_DIR}/lib)
 
 SET(SRC_LIST
     include/mongoose/mongoose.h
