@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <functional>
+#include <inttypes.h>
 #include "SecMng.hpp"
 
 namespace secmng {
@@ -22,7 +23,7 @@ namespace secmng {
         loginPrefix = MG_MK_STR("/SecMng/login");
         getSecsPrefix = MG_MK_STR("/SecMng/GetSecrets");
 
-        login = new Login("username=", "password=");
+        login = new Login("username=", "password=", 10, 30.0);
         acntMng = new AccountMng();
     }
 
@@ -49,6 +50,7 @@ namespace secmng {
         mg_set_protocol_http_websocket(m_nc);
         m_httpServerOpts.document_root = m_webRootDir.c_str();
         m_httpServerOpts.index_files = "html/login.html";
+        mg_set_timer(m_nc, mg_time() + login->GetSessionChkIntv());
 
         if(mg_stat(m_httpServerOpts.document_root, &st) != 0) {
             std::cerr << "Cannot find web_root directory, exiting" << std::endl;
@@ -83,39 +85,55 @@ namespace secmng {
         switch(ev) {
             case MG_EV_HTTP_REQUEST: {
                 if(mng->HasPrefix(&hm->uri, &(mng->loginPrefix))) {
+                    //Login request.
                     mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-                    if((mng->login)->HandleLogin(hm))
-                        mg_printf_http_chunk(nc, "{\"result\": %d}", 1);
-                    else
-                        mg_printf_http_chunk(nc, "{\"result\": %d}", 0);
+                    struct Session s;
+                    if((mng->login)->HandleLogin(hm, s)) {
+                        std::string ckName = (mng->login)->GetCookieName();
+                        mg_printf_http_chunk(nc, "{\"result\":1, "
+                                "\"cookiename\":\"%s\", \"id\":\"%llx\"}\n",
+                                ckName.c_str(), s.id);
+                    } else {
+                        mg_printf_http_chunk(nc, "{\"result\":0}");
+                    }
                     mg_send_http_chunk(nc, "", 0);
                 } else if(mng->HasPrefix(&hm->uri, &(mng->getSecsPrefix))) {
+                    //Get secret information request.
                     mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-                    string ret = "{\"accounts\": [";
-                    std::list<struct Account> acnts;
-                    if((mng->acntMng)->GetAccounts(acnts)) {
-                        for(std::list<struct Account>::iterator iter = acnts.begin();
-                                iter != acnts.end(); ++iter) {
-                            struct Account acnt = *iter; 
-                            ret += "{\"target\":\"" + acnt.target + 
-                                "\", \"username\":\"" + acnt.username +
-                                "\", \"password\":\"" + acnt.password + "\"},";
+                    struct Session s;
+                    if(!(mng->login)->GetSession(hm, s)) {
+                        mg_printf_http_chunk(nc, "{\"result\":0}");
+                    } else {
+                        string ret = "{\"result\":1, \"accounts\": [";
+                        std::list<struct Account> acnts;
+                        if((mng->acntMng)->GetAccounts(acnts)) {
+                            for(std::list<struct Account>::iterator iter = acnts.begin();
+                                    iter != acnts.end(); ++iter) {
+                                struct Account acnt = *iter; 
+                                ret += "{\"target\":\"" + acnt.target + 
+                                    "\", \"username\":\"" + acnt.username +
+                                    "\", \"password\":\"" + acnt.password + "\"},";
+                            }
                         }
+                        ret = ret.substr(0, ret.size() - 1);
+                        ret += "]}";
+                        mg_printf_http_chunk(nc, "%s", ret.c_str());
                     }
-                    ret = ret.substr(0, ret.size() - 1);
-                    ret += "]}";
-                    std::cout << "acnts.size()2 = " << acnts.size() << std::endl;
-                    std::cout << ret << std::endl;
-                    mg_printf_http_chunk(nc, "%s", ret.c_str());
                     mg_send_http_chunk(nc, "", 0);
                 } else {
                     mg_serve_http(nc, hm, mng->m_httpServerOpts);
                 }
-                }
-                break;
+            }
+            break;
             case MG_EV_SSI_CALL:
                 mng->HandleSSICall(nc, (const char *)evData);
                 break;
+            case MG_EV_TIMER: {
+                //Perform session maintenance.
+                (mng->login)->CheckSession();
+                mg_set_timer(nc, mg_time() + (mng->login)->GetSessionChkIntv());
+                break;
+            }
             default:
                 break;
         }
@@ -137,7 +155,7 @@ namespace secmng {
     void SecMng::BroadcastData(struct mg_mgr *mgr) {
         struct mg_connection *nc;
         int a = 0;
-        
+
         for(nc = mg_next(mgr, NULL); nc != NULL; nc = mg_next(mgr, nc)) {
             if(nc->flags & MG_F_IS_WEBSOCKET) {
                 mg_printf_websocket_frame(nc, WEBSOCKET_OP_TEXT, "%d", a);

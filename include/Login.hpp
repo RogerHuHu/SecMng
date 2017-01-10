@@ -25,12 +25,12 @@ namespace secmng {
      * \brief Session information structure.
      */
     struct Session {
-        uint64_t id;         //Session ID. Must be unique and hard to guess.
-        double created;      //Time when the session was created and time of last
-                             //activity. Used to clean up stale sessions.
-        double lastUsed;     //Time when the session was last active.
-        string username;     //Username this session is associated with.
-        string luckyNumber;  //Some state associated with user's session.
+        uint64_t id;              //Session ID. Must be unique and hard to guess.
+        double created;           //Time when the session was created and time of last
+                                  //activity. Used to clean up stale sessions.
+        double lastUsed;          //Time when the session was last active.
+        std::string username;     //Username this session is associated with.
+        std::string luckyNumber;  //Some state associated with user's session.
     };
 
     /**
@@ -48,11 +48,11 @@ namespace secmng {
         /**
          * \brief Handle login requests. 
          *
-         struct Sessionstruct Sessionstruct Sessionstruct Sessionstruct Sessionstruct Sessionstruct Sessionstruct Session* \param hm  Http message.
+         * \param hm  Http message.
          *
          * \return Login result true/false.
          */
-        bool HandleLogin(const struct http_message *hm);
+        bool HandleLogin(const struct http_message *hm, struct Session &s);
 
         /**
          * \brief Cleans up sessions that have been idle for too long.
@@ -63,11 +63,26 @@ namespace secmng {
          * \brief Parses the session cookie and returns the session information
          *
          * \param hm  Http message.
+         * \param s
          *
-         * \return Session structure.
+         * \return Get session result true/false.
          */
-        struct Session GetSession(struct http_message *hm);
+        bool GetSession(struct http_message *hm, struct Session &s);
 
+        /**
+         * \brief Get the cookie name.
+         *
+         * \return Name of session cookie.
+         */
+        std::string GetCookieName() const {return m_sessionCookieName;}
+
+        /**
+         * \brief Get the session check interval.
+         *
+         * \return Session check interval.
+         */
+        double GetSessionChkIntv() const {return m_sessionChkIntv;}
+        
     private:
         /**
          * \brief Extract username and password from request HTTP message.
@@ -89,7 +104,8 @@ namespace secmng {
          *
          * \return Check result true/false.
          */
-        bool CheckPassword(const struct http_message *hm, std::string &username);
+        bool CheckPassword(const struct http_message *hm,
+                struct UserInfo *usrInfo);
 
         /**
          * \brief Creates a new session for user. 
@@ -105,13 +121,14 @@ namespace secmng {
          *
          * \param iter
          */
-        void DestroySession(std::list<struct Session>::iterator *iter);
+        void DestroySession(std::list<struct Session>::iterator &iter);
 
 
         std::string m_usernameFlag;
         std::string m_passwordFlag;
         int m_numSessions;
         double m_sessionTTL;
+        double m_sessionChkIntv;          //Session check interval.
         const char *m_sessionCookieName;
 
         std::list<struct Session> sessions;
