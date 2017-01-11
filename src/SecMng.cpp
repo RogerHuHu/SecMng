@@ -12,6 +12,7 @@
 #include <functional>
 #include <inttypes.h>
 #include "SecMng.hpp"
+#include "forzen.h"
 
 namespace secmng {
     void *instance;

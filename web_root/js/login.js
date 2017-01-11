@@ -31,6 +31,11 @@ $(function() {
             $('#password').focus();
         } else {
             //ajax提交表单，#login_form为表单的ID。 如：$('#login_form').ajaxSubmit(function(data) { ... });
+            var jsObj = {};
+            jsObj.username = $('#username').val();
+            jsObj.password = $('#password').val();
+            var str = JSON.stringify(jsObj);
+
             $.ajax({
                 url: '/SecMng/login',
                 type: 'GET',
