@@ -92,8 +92,9 @@ namespace secmng {
         struct mg_serve_http_opts m_httpServerOpts;
         time_t m_lastTime;
 
-        struct mg_str loginPrefix;
-        struct mg_str getSecsPrefix;
+        struct mg_str m_loginPrefix;
+        struct mg_str m_getSecsPrefix;
+        struct mg_str m_saveSecsPrefix;
 
         Login *login;
         AccountMng *acntMng;

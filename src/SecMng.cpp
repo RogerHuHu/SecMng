@@ -20,11 +20,12 @@ namespace secmng {
         m_httpPort = httpPort;
         m_webRootDir = webRootDir;
 
-        loginPrefix = MG_MK_STR("/SecMng/login");
-        getSecsPrefix = MG_MK_STR("/SecMng/GetSecrets");
+        m_loginPrefix = MG_MK_STR("/SecMng/login");
+        m_getSecsPrefix = MG_MK_STR("/SecMng/GetSecrets");
+        m_saveSecsPrefix = MG_MK_STR("/SecMng/SaveSecrets");
 
-        login = new Login("username=", "password=", 10, 30.0);
-        acntMng = new AccountMng();
+        login = new Login("username=", "password=", 10, 300.0);
+        acntMng = new AccountMng("target=", "username=", "password=");
     }
 
     //Dtor
@@ -84,7 +85,7 @@ namespace secmng {
 
         switch(ev) {
             case MG_EV_HTTP_REQUEST: {
-                if(mng->HasPrefix(&hm->uri, &(mng->loginPrefix))) {
+                if(mng->HasPrefix(&hm->uri, &(mng->m_loginPrefix))) {
                     //Login request.
                     mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
                     struct Session s;
@@ -97,10 +98,11 @@ namespace secmng {
                         mg_printf_http_chunk(nc, "{\"result\":0}");
                     }
                     mg_send_http_chunk(nc, "", 0);
-                } else if(mng->HasPrefix(&hm->uri, &(mng->getSecsPrefix))) {
+                } else if(mng->HasPrefix(&hm->uri, &(mng->m_getSecsPrefix))) {
                     //Get secret information request.
                     mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
                     struct Session s;
+                    std::cout << "Get accounts" << std::endl;
                     if(!(mng->login)->GetSession(hm, s)) {
                         mg_printf_http_chunk(nc, "{\"result\":0}");
                     } else {
@@ -120,7 +122,21 @@ namespace secmng {
                         mg_printf_http_chunk(nc, "%s", ret.c_str());
                     }
                     mg_send_http_chunk(nc, "", 0);
-                } else {
+                } else if(mng->HasPrefix(&hm->uri, &(mng->m_saveSecsPrefix))) {
+                    //Save secret information request.
+                    mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+                    struct Session s;
+                    if(!(mng->login)->GetSession(hm, s)) {
+                        mg_printf_http_chunk(nc, "{\"result\":0}");
+                    } else {
+                        if((mng->acntMng)->SaveAccount(hm)) {
+                            mg_printf_http_chunk(nc, "{\"result\":1}");
+                        } else {
+                            mg_printf_http_chunk(nc, "{\"result\":0}");
+                        }
+                    }
+                    mg_send_http_chunk(nc, "", 0);
+                }else {
                     mg_serve_http(nc, hm, mng->m_httpServerOpts);
                 }
             }

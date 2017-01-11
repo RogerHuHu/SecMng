@@ -126,8 +126,9 @@ namespace secmng {
      * Destroy the session state.
      */
     void Login::DestroySession(std::list<struct Session>::iterator &iter) {
-        if(sessions.size() > 0)
-            sessions.erase(iter);
+        if(sessions.size() > 0) {
+            iter = sessions.erase(iter);
+        }
     }
 
     /**
@@ -136,11 +137,13 @@ namespace secmng {
     void Login::CheckSession() {
         double threshold = mg_time() - m_sessionTTL;
         for(std::list<struct Session>::iterator iter = sessions.begin();
-                iter != sessions.end(); ++iter) {
+                iter != sessions.end();) {
             if(iter->id != 0 && iter->lastUsed < threshold) {
                 std::cout << "Session " << iter->id << " " << iter->username << 
                     " closed due to idleness." << std::endl;
                 DestroySession(iter);
+            } else {
+                ++iter;
             }
         }
     }

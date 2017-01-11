@@ -178,6 +178,7 @@ namespace database {
         }
 
         if(sqlite3_exec(m_db, "BEGIN;", NULL, NULL, &errMsg) != SQLITE_OK) {
+            std::cout << "BEGIN" << std::endl;
             std::cout << errMsg << std::endl;
             sqlite3_free(errMsg);
             return false;
@@ -196,6 +197,7 @@ namespace database {
         }
 
         if(sqlite3_exec(m_db, "COMMIT;", NULL, NULL, &errMsg) != SQLITE_OK) {
+            std::cout << "COMMIT" << std::endl;
             std::cout << errMsg << std::endl;
             sqlite3_free(errMsg);
             return false;
@@ -211,7 +213,7 @@ namespace database {
         sqlite3_stmt *stmt;
         std::string sqlRet;
         
-        std::string sqlCmd = "SELECT * Target,Username,Password FROM accounts;";
+        std::string sqlCmd = "SELECT Target,Username,Password FROM accounts;";
         if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), &stmt,
                     NULL) != SQLITE_OK) {
             if(stmt)
