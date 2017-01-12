@@ -15,10 +15,13 @@
 namespace database {
 
     Database::Database(const std::string &dbPath) :
-        m_dbPath(dbPath) {}
+        m_dbPath(dbPath) {
+        aes = new AesEncryptor(key);
+    }
 
     Database::~Database() {
         SqliteClose();
+        delete aes;
     }
 
     /**
@@ -189,12 +192,19 @@ namespace database {
             return false;
         }
 
+
         sqlite3_bind_text(stmt, 1, acnt.target.c_str(), 
                 acnt.target.size(), SQLITE_STATIC);
         sqlite3_bind_text(stmt, 2, acnt.username.c_str(),
                 acnt.username.size(), SQLITE_STATIC);
-        sqlite3_bind_text(stmt, 3, acnt.password.c_str(),
-                acnt.password.size(), SQLITE_STATIC);
+        std::string encPassword = aes->EncryptString(acnt.password);
+        std::cout << encPassword << std::endl;
+        sqlite3_bind_text(stmt, 3, encPassword.c_str(),
+                encPassword.size(), SQLITE_STATIC);
+        std::string temp = aes->EncryptString(acnt.password);
+        std::cout << temp << std::endl;
+        std::string temp1 = aes->DecryptString(temp);
+        std::cout << temp1 << std::endl;
 
         if(sqlite3_step(stmt) != SQLITE_DONE) {
             sqlite3_finalize(stmt);
@@ -234,7 +244,11 @@ namespace database {
             sqlRet = (const char *)sqlite3_column_text(stmt, 2);
             acnt.username = sqlRet != "" ? sqlRet : "NULL";
             sqlRet = (const char *)sqlite3_column_text(stmt, 3);
-            acnt.password = sqlRet != "" ? sqlRet : "NULL";
+            acnt.password = sqlRet != "" ? sqlRet : "";
+            std::cout << acnt.password;
+            std::cout << "========================" << std::endl;
+            acnt.password = aes->DecryptString(acnt.password);
+            std::cout << acnt.password << std::endl;
             acnts.push_back(acnt);
         }
         

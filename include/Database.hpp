@@ -14,6 +14,10 @@
 #include <string>
 #include <sqlite3.h>
 #include <list>
+#include "AESEncryptor.hpp"
+#include "AESResource.hpp"
+
+using namespace secmng;
 
 namespace database {
     /**
@@ -121,6 +125,8 @@ namespace database {
     private:
         std::string m_dbPath;
         sqlite3 *m_db;
+
+        AesEncryptor *aes;
     };
 }
 

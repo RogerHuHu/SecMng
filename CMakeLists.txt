@@ -49,6 +49,12 @@ SET(SRC_LIST
     include/frozen/frozen.h
     src/mongoose/mongoose.c
     src/frozen/frozen.c
+    include/AES.hpp
+    src/AES.cpp
+    include/AESResource.hpp
+    src/AESResource.cpp
+    include/AesEncryptor.hpp
+    src/AesEncryptor
 #    src/big_upload.c)
 #    src/server.c)
     include/SecMng.hpp
