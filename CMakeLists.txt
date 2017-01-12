@@ -39,13 +39,16 @@ ELSE(DEBUG)
 ENDIF(DEBUG)
 
 INCLUDE_DIRECTORIES(${SECMNG_SOURCE_DIR}/include
-                    ${SECMNG_SOURCE_DIR}/include/mongoose)
+                    ${SECMNG_SOURCE_DIR}/include/mongoose
+                    ${SECMNG_SOURCE_DIR}/include/frozen)
 
 #LINK_DIRECTORIES(${SECMNG_SOURCE_DIR}/lib)
 
 SET(SRC_LIST
     include/mongoose/mongoose.h
+    include/frozen/frozen.h
     src/mongoose/mongoose.c
+    src/frozen/frozen.c
 #    src/big_upload.c)
 #    src/server.c)
     include/SecMng.hpp

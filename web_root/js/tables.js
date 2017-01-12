@@ -9,11 +9,11 @@ $(document).ready(function() {
 function GetSecrets() {
     $.ajax({
         url: '/SecMng/GetSecrets',
-        type: 'GET',
+        type: 'POST',
         dataType: 'json',
         success: function(ret) {
             if(ret.result == 0) {
-                alert("请登录!");
+                alert("重新请登录!");
                 window.location.href='../html/login.html';
             } else if(ret.result == 1){
                 for(var i = 0; i < ret.accounts.length; i++) {
@@ -45,14 +45,15 @@ $("#btn-edit").click(function() {
 $("#btn-check").click(function() {
     if(confirm("是否保存")) {
         $(this).parents('tr').find("td[contenteditable='true']").attr("contenteditable", "false");
-        var strTarget = $(this).parents('tr').children("td").get(0).innerText;
-        var strUsername = $(this).parents('tr').children("td").get(1).innerText;
-        var strPassword = $(this).parents('tr').children("td").get(2).innerText;
+        var jsObj = {};
+        jsObj.target = $(this).parents('tr').children("td").get(0).innerText;
+        jsObj.username = $(this).parents('tr').children("td").get(1).innerText;
+        jsObj.password = $(this).parents('tr').children("td").get(2).innerText;
+
         $.ajax({
             url: '/SecMng/SaveSecrets',
-            type: 'GET',
-            data: {target:strTarget, username:strUsername, password:strPassword},
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            type: 'POST',
+            data: JSON.stringify(jsObj),
             dataType: 'json',
             success: function(ret) {
                 if(ret.result == 1) {
@@ -67,6 +68,22 @@ $("#btn-check").click(function() {
 
 $("#btn-del").click(function() {
     if(confirm("是否删除")) {
-        $(this).parents('tr').detach();
+        var $clone = $(this).parents('tr');
+        var jsObj = {};
+        jsObj.target = $clone.children("td").get(0).innerText;
+        jsObj.username = $clone.children("td").get(1).innerText;
+        jsObj.password = $clone.children("td").get(2).innerText;
+
+        $.ajax({
+            url: '/SecMng/DelSecrets',
+            type: 'POST',
+            data: JSON.stringify(jsObj),
+            dataType: 'json',
+            success: function(ret) {
+                if(ret.result == 1) {
+                    $clone.detach();
+                }
+            },
+        });
     }
 });

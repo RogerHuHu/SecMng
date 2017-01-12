@@ -95,6 +95,7 @@ namespace secmng {
         struct mg_str m_loginPrefix;
         struct mg_str m_getSecsPrefix;
         struct mg_str m_saveSecsPrefix;
+        struct mg_str m_delSecsPrefix;
 
         Login *login;
         AccountMng *acntMng;

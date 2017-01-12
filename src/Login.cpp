@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include "Login.hpp"
+#include "frozen.h"
 
 namespace secmng {
     //Ctor
@@ -48,21 +49,22 @@ namespace secmng {
      */
     bool Login::ExtractUserInfo(const struct http_message *hm, std::string &username,
             std::string &password) {
-        int idx1, idx2;
-        std::string httpMsg((hm->uri).p);
-        ptMatch->CaculateFail(m_usernameFlag);
-        if((idx1 = ptMatch->Match(httpMsg, m_usernameFlag)) < 0)
-            return false;
-        ptMatch->CaculateFail(m_passwordFlag);
-        if((idx2 = ptMatch->Match(httpMsg, m_passwordFlag)) < 0)
-            return false;
-        username = httpMsg.substr(idx1, idx2 - idx1 - 1 - m_passwordFlag.size()); 
+        std::string httpMsg(hm->body.p);
+        std::cout << httpMsg << std::endl;
 
-        std::string spStr = "HTTP/1.1";
-        ptMatch->CaculateFail(spStr); 
-        if((idx1 = ptMatch->Match(httpMsg, spStr)) < 0)
-            return false;
-        password = httpMsg.substr(idx2, idx1 - idx2 - 1 - spStr.size());
+        char *_username, *_password;
+        std::string fmt = "{" + m_usernameFlag + ":%Q," +
+            m_passwordFlag + ":%Q}";
+        json_scanf(httpMsg.c_str(), httpMsg.size(), fmt.c_str(),
+                &_username, &_password);
+
+        username = _username; 
+        password = _password;
+
+        free(_username);
+        free(_password);
+
+        std::cout << username << std::endl;
             
         return true;
     }

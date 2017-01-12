@@ -30,6 +30,7 @@ namespace database {
      * \brief Account information struct.
      */
     struct Account {
+        int id;
         std::string target;
         std::string username;
         std::string password;
@@ -73,7 +74,7 @@ namespace database {
          *
          * \return Add result true/false.
          */
-        bool InsertUserInfo(const struct UserInfo usrInfo);
+        bool InsertUserInfo(const struct UserInfo &usrInfo);
 
         /**
          * \brief Get user information from database.
@@ -94,20 +95,29 @@ namespace database {
         /**
          * \brief Insert account to sqlite database.
          *
-         * \param acnt
+         * \param acnt  Account information structure.
          *
          * \return Insert result true/false.
          */
-        bool InsertAccount(const struct Account acnt);
+        bool InsertAccount(const struct Account &acnt);
 
         /**
          * \brief Get account from sqlite database.
          *
-         * \param acnt
+         * \param acnt  Account information structure.
          *
-         * \return Database select resutl true/false.
+         * \return Database select result true/false.
          */
         bool GetAccount(std::list<struct Account> &acnts);
+
+        /**
+         * \brief Delete account from sqlite database.
+         *
+         * \param acnt  Account information structure.
+         *
+         * \return Database delete result true/false.
+         */
+        bool DelAccount(const struct Account &acnt);
     private:
         std::string m_dbPath;
         sqlite3 *m_db;

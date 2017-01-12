@@ -67,7 +67,7 @@ namespace database {
     /**
      * Insert user information to sqlite database
      */
-    bool Database::InsertUserInfo(const struct UserInfo usrInfo) {
+    bool Database::InsertUserInfo(const struct UserInfo &usrInfo) {
         char *errMsg = 0;
         sqlite3_stmt *stmt;
 
@@ -164,12 +164,17 @@ namespace database {
     /**
      * Insert account to sqlite database.
      */
-    bool Database::InsertAccount(const struct Account acnt) {
+    bool Database::InsertAccount(const struct Account &acnt) {
         char *errMsg = 0;
         sqlite3_stmt *stmt;
 
         std::string sqlCmd = "INSERT INTO accounts(Target,Username,Password"
-               ") VALUES(?,?,?);";
+               ") VALUES(?,?,?)"; 
+        /*
+        WHERE Target='" + acnt.target + 
+               "' AND Username='" + acnt.username + "';";
+               */
+        std::cout << sqlCmd << std::endl;
 
         if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), 
                     &stmt, NULL) != SQLITE_OK) {
@@ -210,10 +215,10 @@ namespace database {
      * Get account from sqlite database.
      */
     bool Database::GetAccount(std::list<struct Account> &acnts) {
-        sqlite3_stmt *stmt;
+        sqlite3_stmt *stmt = NULL;
         std::string sqlRet;
         
-        std::string sqlCmd = "SELECT Target,Username,Password FROM accounts;";
+        std::string sqlCmd = "SELECT Id,Target,Username,Password FROM accounts;";
         if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), &stmt,
                     NULL) != SQLITE_OK) {
             if(stmt)
@@ -223,26 +228,46 @@ namespace database {
 
         while(sqlite3_step(stmt) == SQLITE_ROW) {
             struct Account acnt;
-            sqlRet = (const char *)sqlite3_column_text(stmt, 0);
-            acnt.target = sqlRet != "" ? sqlRet : "NULL";
+            acnt.id = sqlite3_column_int(stmt, 0);
             sqlRet = (const char *)sqlite3_column_text(stmt, 1);
-            acnt.username = sqlRet != "" ? sqlRet : "NULL";
+            acnt.target = sqlRet != "" ? sqlRet : "NULL";
             sqlRet = (const char *)sqlite3_column_text(stmt, 2);
+            acnt.username = sqlRet != "" ? sqlRet : "NULL";
+            sqlRet = (const char *)sqlite3_column_text(stmt, 3);
             acnt.password = sqlRet != "" ? sqlRet : "NULL";
             acnts.push_back(acnt);
         }
         
         if(stmt)
             sqlite3_finalize(stmt);
-        /*
-        for(int i = 0; i < 2; i++) {
-            struct Account acnt;
-            acnt.target = "Test1";
-            acnt.username = "roger";
-            acnt.password = "123";
-            acnts.push_back(acnt);
-        }*/
         
         return acnts.size() > 0 ? true : false;
+    }
+
+    /**
+     * Delete account from sqlite database.
+     */
+    bool Database::DelAccount(const struct Account &acnt) {
+        sqlite3_stmt *stmt = NULL;
+
+        std::string sqlCmd = "DELETE FROM accounts WHERE Target=? AND Username=?;";
+        std::cout << sqlCmd << std::endl;
+        if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), &stmt,
+                    NULL) != SQLITE_OK) {
+            if(stmt)
+                sqlite3_finalize(stmt);
+            return false;
+        }
+       
+        sqlite3_bind_text(stmt, 1, acnt.target.c_str(), acnt.target.size(),
+                SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 2, acnt.username.c_str(), acnt.username.size(),
+                SQLITE_STATIC);
+        int ret = sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+
+        if(ret == SQLITE_DONE || ret == SQLITE_ROW)
+            return true;
+        return false;
     }
 }

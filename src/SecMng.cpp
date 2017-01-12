@@ -11,8 +11,9 @@
 #include <iostream>
 #include <functional>
 #include <inttypes.h>
+#include <stdlib.h>
 #include "SecMng.hpp"
-#include "forzen.h"
+#include "frozen.h"
 
 namespace secmng {
     void *instance;
@@ -24,9 +25,10 @@ namespace secmng {
         m_loginPrefix = MG_MK_STR("/SecMng/login");
         m_getSecsPrefix = MG_MK_STR("/SecMng/GetSecrets");
         m_saveSecsPrefix = MG_MK_STR("/SecMng/SaveSecrets");
+        m_delSecsPrefix = MG_MK_STR("/SecMng/DelSecrets");
 
-        login = new Login("username=", "password=", 10, 300.0);
-        acntMng = new AccountMng("target=", "username=", "password=");
+        login = new Login("username", "password", 10, 300.0);
+        acntMng = new AccountMng("target", "username", "password");
     }
 
     //Dtor
@@ -113,7 +115,10 @@ namespace secmng {
                             for(std::list<struct Account>::iterator iter = acnts.begin();
                                     iter != acnts.end(); ++iter) {
                                 struct Account acnt = *iter; 
-                                ret += "{\"target\":\"" + acnt.target + 
+                                char chId[10];
+                                sprintf(chId, "%d", acnt.id);
+                                ret += "{\"id\":" + (std::string)chId +
+                                    ", \"target\":\"" + acnt.target + 
                                     "\", \"username\":\"" + acnt.username +
                                     "\", \"password\":\"" + acnt.password + "\"},";
                             }
@@ -137,7 +142,22 @@ namespace secmng {
                         }
                     }
                     mg_send_http_chunk(nc, "", 0);
-                }else {
+                } else if(mng->HasPrefix(&hm->uri, &(mng->m_delSecsPrefix))) {
+                    //Delete secret information request.
+                    mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+                    struct Session s;
+                    if(!(mng->login)->GetSession(hm, s)) {
+                        mg_printf_http_chunk(nc, "{\"result\":0}");
+                    } else {
+                        if((mng->acntMng)->DelAccount(hm)) {
+                            std::cout << "Delete Success" << std::endl;
+                            mg_printf_http_chunk(nc, "{\"result\":1}");
+                        } else {
+                            mg_printf_http_chunk(nc, "{\"result\":0}");
+                        }
+                    }
+                    mg_send_http_chunk(nc, "", 0);
+                } else {
                     mg_serve_http(nc, hm, mng->m_httpServerOpts);
                 }
             }

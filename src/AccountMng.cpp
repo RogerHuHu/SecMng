@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include "AccountMng.hpp"
+#include "frozen.h"
 
 namespace secmng {
     //Ctor
@@ -32,13 +33,13 @@ namespace secmng {
      * Get accounts from database.
      */
     bool AccountMng::GetAccounts(std::list<struct Account> &acnts) {
+        bool retVal = false;
         if(db->SqliteOpen()) {
-            if(db->GetAccount(acnts)) {
-                return true;
-            }
+            if(db->GetAccount(acnts))
+                retVal = true;
             db->SqliteClose();
         }
-        return false;
+        return retVal;
     }
 
     /**
@@ -46,46 +47,71 @@ namespace secmng {
      */
     bool AccountMng::SaveAccount(const struct http_message *hm) {
         struct Account acnt;
+        bool retVal = false;
         ExtractAccount(hm, acnt);
         std::cout << acnt.target << std::endl;
         std::cout << acnt.username << std::endl;
         std::cout << acnt.password << std::endl;
         if(db->SqliteOpen()) {
             if(db->InsertAccount(acnt))
-                return true;
+                retVal = true;
             db->SqliteClose();
         }
-        return false;
+        return retVal;
+    }
+
+    /**
+     * Delete account to database.
+     */
+    bool AccountMng::DelAccount(const struct http_message *hm) {
+        struct Account acnt;
+        bool retVal = false;
+        ExtractAccount(hm, acnt);
+        if(db->SqliteOpen()) {
+            if(db->DelAccount(acnt))
+                retVal = true;
+            db->SqliteClose();
+        }
+        return retVal;
     }
 
     /**
      * Extract username and password from request HTTP message.
      */
-    bool AccountMng::ExtractAccount(const struct http_message *hm, struct Account &acnt) {
-        int idx1, idx2, idx3;
-        std::string httpMsg((hm->uri).p);
-
-        std::cout << "============SaveAccount============" << std::endl;
+    bool AccountMng::ExtractAccount(const struct http_message *hm,
+            struct Account &acnt) {
+        std::string httpMsg((hm->body).p);
         std::cout << httpMsg << std::endl;
 
-        ptMatch->CaculateFail(m_targetFlag);
-        if((idx1 = ptMatch->Match(httpMsg, m_targetFlag)) < 0)
-            return false;
-        ptMatch->CaculateFail(m_usernameFlag);
-        if((idx2 = ptMatch->Match(httpMsg, m_usernameFlag)) < 0)
-            return false;
-        acnt.target = httpMsg.substr(idx1, idx2 - idx1 - 1 - m_usernameFlag.size());
+        char *target, *username, *password;
+        std::string fmt = "{" + m_targetFlag + ":%Q," +
+            m_usernameFlag + ":%Q," + m_passwordFlag + ":%Q}";
+        std::cout << fmt << std::endl;
+        json_scanf(httpMsg.c_str(), httpMsg.size(), fmt.c_str(),
+                &target, &username, &password);
+        acnt.target = target;
+        acnt.username = username;
+        acnt.password = password;
 
-        ptMatch->CaculateFail(m_passwordFlag);
-        if((idx3 = ptMatch->Match(httpMsg, m_passwordFlag)) < 0)
-            return false;
-        acnt.username = httpMsg.substr(idx2, idx3 - idx2 - 1 - m_passwordFlag.size()); 
+        free(target);
+        free(username);
+        free(password);
 
-        std::string spStr = "HTTP/1.1";
-        ptMatch->CaculateFail(spStr); 
-        if((idx1 = ptMatch->Match(httpMsg, spStr)) < 0)
-            return false;
-        acnt.password = httpMsg.substr(idx3, idx1 - idx3 - 1 - spStr.size());
+        return true;
+    }
+
+    /**
+     * Extract account's id from request http message.
+     */
+    bool AccountMng::ExtractId(const struct http_message *hm,
+            struct Account &acnt) {
+        std::string httpMsg(hm->body.p);
+        std::cout << httpMsg << std::endl;
+
+        int id;
+        json_scanf(httpMsg.c_str(), httpMsg.size(), "{id:%d}",
+                &id);
+        acnt.id = id;
 
         return true;
     }

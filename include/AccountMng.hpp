@@ -51,6 +51,15 @@ namespace secmng {
          * \return Save accounts result true/false.
          */
         bool SaveAccount(const struct http_message *hm);
+
+        /**
+         * \brief Delete account to database. 
+         *
+         * \param hm  Http message.
+         *
+         * \return Delete accounts result true/false.
+         */
+        bool DelAccount(const struct http_message *hm);
     private:
         /**
          * \brief Extract username and password from request HTTP message.
@@ -61,6 +70,14 @@ namespace secmng {
          * \return Account extract result.
          */
         bool ExtractAccount(const struct http_message *hm, struct Account &acnt);
+
+        /**
+         * \brief Extract account's id from request http message.
+         *
+         * \param hm    Http message. 
+         * \param acnt  Account information structure.
+         */
+        bool ExtractId(const struct http_message *hm, struct Account &acnt);
 
         std::string m_targetFlag;
         std::string m_usernameFlag;

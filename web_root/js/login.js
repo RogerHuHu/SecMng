@@ -34,12 +34,11 @@ $(function() {
             var jsObj = {};
             jsObj.username = $('#username').val();
             jsObj.password = $('#password').val();
-            var str = JSON.stringify(jsObj);
 
             $.ajax({
                 url: '/SecMng/login',
-                type: 'GET',
-                data: {username:$('#username').val(), password:$('#password').val()},
+                type: 'POST',
+                data: JSON.stringify(jsObj),
                 dataType: 'json',
                 success: function(ret) {
                     if(ret.result == 1) {
