@@ -7,10 +7,10 @@ class AES
 public:
     AES(unsigned char* key);
     virtual ~AES();
-    unsigned char* Cipher(unsigned char* input);　　　　// 加密，传入的数组大小必须是16字节
-    unsigned char* InvCipher(unsigned char* input);　　// 解密，传入的数组也必须是16字节
-    void* Cipher(void* input, int length=0);　　　　　　// 可以传入数组，大小必须是16的整数倍，如果不是将会越界操作；如果不传length而默认为0，那么将按照字符串处理，遇'\0'结束
-    void* InvCipher(void* input, int length);　　　　　 // 必须传入数组和大小，必须是16的整数倍
+    unsigned char* Cipher(unsigned char* input);       // 加密，传入的数组大小必须是16字节
+    unsigned char* InvCipher(unsigned char* input);    // 解密，传入的数组也必须是16字节
+    void* Cipher(void* input, int length=0);           // 可以传入数组，大小必须是16的整数倍，如果不是将会越界操作；如果不传length而默认为0，那么将按照字符串处理，遇'\0'结束
+    void* InvCipher(void* input, int length);          // 必须传入数组和大小，必须是16的整数倍
     
 private:
     unsigned char Sbox[256];

@@ -14,7 +14,7 @@
 #include <string>
 #include <sqlite3.h>
 #include <list>
-#include "AESEncryptor.hpp"
+#include "AesEncryptor.hpp"
 #include "AESResource.hpp"
 
 using namespace secmng;

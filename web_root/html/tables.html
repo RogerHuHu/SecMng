@@ -29,6 +29,8 @@
     <!-- Custom Fonts -->
     <link href="../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
+    <link href="../css/tables.css" rel="stylesheet" type="text/css">
+
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -385,7 +387,7 @@
                 <div class="col-lg-12">
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <p> 
+                            <p>
                                 <button type="button" id="btn-add-account" class="btn btn-primary btn-lg btn-block">新增帐号</button>
                             </p>
                         </div>
@@ -406,10 +408,11 @@
                                     <td contenteditable="false">请输入用户名</td>
                                     <td contenteditable="false">请输入密码</td>
                                     <td>
-                                        <button type="button" id="btn-edit" class="btn btn-success btn-circle"><i class="fa fa-edit"></i></button> 
-                                        <button type="button" id="btn-check" class="btn btn-info btn-circle"><i class="fa fa-check"></i></button> 
+                                        <button type="button" id="btn-edit" class="btn btn-success btn-circle"><i class="fa fa-edit"></i></button>
+                                        <button type="button" id="btn-check" class="btn btn-info btn-circle"><i class="fa fa-check"></i></button>
+                                        <button type="button" id="btn-refresh" class="btn btn-primary btn-circle"><i class="fa fa-refresh"></i></button>
                                         <button type="button" id="btn-del" class="btn btn-warning btn-circle"><i class="fa fa-times"></i></button>
-                                    </td> 
+                                    </td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -421,6 +424,73 @@
                             </div>
                         </div>
                         <!-- /.panel-body -->
+                        <!-- Modal -->
+                        <div class="modal fade" id="modal-account" tabindex="-1" role="dialog" aria-labelledby="mdlb-input-account" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                        <h4 class="modal-title" id="mdlb-input-account">请输入帐号信息</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form>
+                                            <fieldset>
+                                                <label for="modal-label-target">目标</label>
+                                                <input type="text" name="modal-name-target" id="modal-text-target" value="" class="text ui-widget-content ui-corner-all">
+                                                <label for="modal-label-username">用户名</label>
+                                                <input type="text" name="modal-name-username" id="modal-text-username" value="" class="text ui-widget-content ui-corner-all">
+                                                <label for="password">密码</label>
+                                                <input type="password" name="modal-name-password" id="modal-text-password" value="" class="text ui-widget-content ui-corner-all">
+                                            </fieldset>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                        <button type="button" id="modal-btn-check" class="btn btn-primary">确定</button>
+                                    </div>
+                                </div>
+                                <!-- /.modal-content -->
+                            </div>
+                            <!-- /.modal-dialog -->
+                        </div>
+                        <!-- /.modal -->
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="modal-password-rule" tabindex="-1" role="dialog" aria-labelledby="mdlb-password-rule" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                        <h4 class="modal-title" id="mdlb-input-account">请输入密码规则</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form>
+                                            <!--fieldset-->
+                                                <label for="modal-label-length">密码长度</label>
+                                                <input type="text" name="modal-name-length" id="modal-text-length" value="" class="text ui-widget-content ui-corner-all">
+                                                <label for="modal-label-rule">密码规则</label>
+                                                <label class="radio-inline">
+                                                    <input name="option-radio-inline" id="option-radio-pure" value="" type="radio">纯数字
+                                                </label>
+                                                <label class="radio-inline">
+                                                    <input name="option-radio-inline" id="option-radio-mix1" value="" type="radio">数字+字母
+                                                </label>
+                                                <label class="radio-inline">
+                                                    <input name="option-radio-inline" id="option-radio-mix2" value="" type="radio">数字+字母+特殊符号
+                                                </label>
+                                            <!--/fieldset-->
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                        <button type="button" id="modal-password-rule-btn-check" class="btn btn-primary">确定</button>
+                                    </div>
+                                </div>
+                                <!-- /.modal-content -->
+                            </div>
+                            <!-- /.modal-dialog -->
+                        </div>
+                        <!-- /.modal -->
                     </div>
                     <!-- /.panel -->
                 </div>
@@ -461,6 +531,6 @@
     -->
     <script type="text/javascript" src="../js/tables.js"></script>
 
-</body>
+    </body>
 
-</html>
+    </html>

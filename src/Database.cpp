@@ -201,9 +201,9 @@ namespace database {
         std::cout << encPassword << std::endl;
         sqlite3_bind_text(stmt, 3, encPassword.c_str(),
                 encPassword.size(), SQLITE_STATIC);
-        std::string temp = aes->EncryptString(acnt.password);
-        std::cout << temp << std::endl;
-        std::string temp1 = aes->DecryptString(temp);
+        std::cout << encPassword.c_str() << std::endl;
+        std::cout << encPassword.size() << std::endl;
+        std::string temp1 = aes->DecryptString(encPassword);
         std::cout << temp1 << std::endl;
 
         if(sqlite3_step(stmt) != SQLITE_DONE) {
