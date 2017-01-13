@@ -32,10 +32,10 @@ namespace secmng {
     /**
      * Get accounts from database.
      */
-    bool AccountMng::GetAccounts(std::list<struct Account> &acnts) {
+    bool AccountMng::GetAccounts(std::list<struct Account> &acnts, int flag) {
         bool retVal = false;
         if(db->SqliteOpen()) {
-            if(db->GetAccount(acnts))
+            if(db->GetAccount(acnts, flag))
                 retVal = true;
             db->SqliteClose();
         }
@@ -45,7 +45,7 @@ namespace secmng {
     /**
      * Save account to database.
      */
-    bool AccountMng::SaveAccount(const struct http_message *hm) {
+    bool AccountMng::SaveAccount(const struct http_message *hm, int flag) {
         struct Account acnt;
         bool retVal = false;
         ExtractAccount(hm, acnt);
@@ -53,7 +53,7 @@ namespace secmng {
         std::cout << acnt.username << std::endl;
         std::cout << acnt.password << std::endl;
         if(db->SqliteOpen()) {
-            if(db->InsertAccount(acnt))
+            if(db->InsertAccount(acnt, flag))
                 retVal = true;
             db->SqliteClose();
         }
@@ -63,12 +63,12 @@ namespace secmng {
     /**
      * Delete account to database.
      */
-    bool AccountMng::DelAccount(const struct http_message *hm) {
+    bool AccountMng::DelAccount(const struct http_message *hm, int flag) {
         struct Account acnt;
         bool retVal = false;
         ExtractAccount(hm, acnt);
         if(db->SqliteOpen()) {
-            if(db->DelAccount(acnt))
+            if(db->DelAccount(acnt, flag))
                 retVal = true;
             db->SqliteClose();
         }

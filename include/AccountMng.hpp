@@ -38,28 +38,31 @@ namespace secmng {
          * \brief Get accounts from database. 
          *
          * \param acnts  Account information structure list.
+         * \param flag   User flag.
          *
          * \return Get accounts result true/false.
          */
-        bool GetAccounts(std::list<struct Account> &acnts);
+        bool GetAccounts(std::list<struct Account> &acnts, int flag);
 
         /**
          * \brief Save account to database. 
          *
-         * \param hm  Http message.
+         * \param hm    Http message.
+         * \param flag  User flag.
          *
          * \return Save accounts result true/false.
          */
-        bool SaveAccount(const struct http_message *hm);
+        bool SaveAccount(const struct http_message *hm, int flag);
 
         /**
          * \brief Delete account to database. 
          *
-         * \param hm  Http message.
+         * \param hm    Http message.
+         * \param flag  User flag.
          *
          * \return Delete accounts result true/false.
          */
-        bool DelAccount(const struct http_message *hm);
+        bool DelAccount(const struct http_message *hm, int flag);
     private:
         /**
          * \brief Extract username and password from request HTTP message.

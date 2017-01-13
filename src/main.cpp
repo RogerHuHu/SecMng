@@ -12,7 +12,13 @@ int main(void) {
     /*
     Database *db = new Database("../db/secmng.db");
     db->SqliteOpen();
-    db->CreateTableAccounts();
+    //db->CreateTableAccounts();
+    struct UserInfo acnt;
+    acnt.username = "Hqqqqq";
+    acnt.password = "huqin52457";
+    acnt.priority = 2;
+    acnt.flag = 2;
+    db->InsertUserInfo(acnt);
     db->SqliteClose();
     */
 }

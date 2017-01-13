@@ -31,6 +31,7 @@ namespace secmng {
         double lastUsed;          //Time when the session was last active.
         std::string username;     //Username this session is associated with.
         std::string luckyNumber;  //Some state associated with user's session.
+        int flag;                 //User flag;
     };
 
     /**
@@ -112,9 +113,12 @@ namespace secmng {
          *
          * \param hm        Http message.
          * \param username  
+         * \param flag      User flag.
+         *
+         * \reutrn The session structure created.
          */
         struct Session CreateSession(const struct http_message *hm,
-                const std::string &username);
+                const std::string &username, int flag);
 
         /**
          * \brief Destroys the session state.

@@ -28,32 +28,44 @@ function GetSecrets() {
     });
 }
 
+var $tableClone;
+var $rowClone;
+var addFlag = 0;
+
 $(function() {
     //新增账号
     $('#btn-add-account').click(function() {
-        var $clone = $('#tbody-test').find('tr.hide').clone(true).removeClass("hide odd");
-        $('#tbody-test').prepend($clone);
+        $rowClone = $('#tbody-test').find('tr.hide').clone(true).removeClass("hide odd");
+        $('#modal-account').modal('show');
+        addFlag = 1;
     });
 });
 
 $("#btn-edit").click(function() {
-    var $clone = $(this).parents('tr').children('td');
-    $('#modal-text-target').val($clone.get(0).innerText);
-    $('#modal-text-username').val($clone.get(1).innerText);
-    $('#modal-text-password').val($clone.get(2).innerText);
+    $tableClone = $(this).parents('tr').children('td');
+    $('#modal-text-target').val($tableClone.get(0).innerText);
+    $('#modal-text-username').val($tableClone.get(1).innerText);
+    $('#modal-text-password').val($tableClone.get(2).innerText);
     $('#modal-account').modal('show');
+});
 
-    $('#modal-btn-check').click(function() {
-        $clone.get(0).innerText = $('#modal-text-target').val().trim();
-        $clone.get(1).innerText = $('#modal-text-username').val().trim();
-        $clone.get(2).innerText = $('#modal-text-password').val().trim();
-        $('#modal-account').modal('hide');
-    });
+$('#modal-btn-check').click(function() {
+    if(addFlag == 0) {
+        $tableClone.get(0).innerText = $('#modal-text-target').val().trim();
+        $tableClone.get(1).innerText = $('#modal-text-username').val().trim();
+        $tableClone.get(2).innerText = $('#modal-text-password').val().trim();
+    } else if(addFlag == 1) {
+        $rowClone.children('td').get(0).innerText = $('#modal-text-target').val().trim();
+        $rowClone.children('td').get(1).innerText = $('#modal-text-username').val().trim();
+        $rowClone.children('td').get(2).innerText = $('#modal-text-password').val().trim();
+        $('#tbody-test').prepend($rowClone);
+        addFlag = 0;
+    }
+    $('#modal-account').modal('hide');
 });
 
 $("#btn-check").click(function() {
     if(confirm("是否保存")) {
-        $(this).parents('tr').find("td[contenteditable='true']").attr("contenteditable", "false");
         var jsObj = {};
         jsObj.target = $(this).parents('tr').children("td").get(0).innerText;
         jsObj.username = $(this).parents('tr').children("td").get(1).innerText;
@@ -75,28 +87,18 @@ $("#btn-check").click(function() {
     }
 });
 
-$("#btn-refresh").click(function() {
-    var $clone = $(this).parents('tr').children('td');
-    $('#modal-password-rule').modal('show');
 
-    $('#modal-password-rule-btn-check').click(function() {
-        var length = $('#modal-text-length').val();
-        if($('#option-radio-pure').attr("checked"))
-            $clone.get(2).innerText = GeneratePassword(parseInt(length), 0)
-        else if($('#option-radio-mix1').attr("checked"))
-            $clone.get(2).innerText = GeneratePassword(parseInt(length), 1)
-        else if($('#option-radio-mix2').attr("checked"))
-            $clone.get(2).innerText = GeneratePassword(parseInt(length), 2)
-        $('#modal-password-rule').modal('hide');
-    });
-    /*
-    if(confirm("是否更新密码")) {
-        var length = prompt("请输入密码长度", ""); 
-        if(length != null && length != "") {
-            $(this).parents('tr').children("td").get(2).innerText = GeneratePassword(parseInt(length));
-        }
-    }
-    */
+$("#btn-refresh").click(function() {
+    $tableClone = $(this).parents('tr').children('td');
+    $('#modal-password-rule').modal('show');
+    $modal.modal('show');
+});
+
+$('#modal-password-rule-btn-check').click(function() {
+    var length = $('#modal-text-length').val();
+    var type = $("input[name='option-radio-inline']:checked").val();
+    $tableClone.get(2).innerText = GeneratePassword(parseInt(length), parseInt(type));
+    $('#modal-password-rule').modal('hide');
 });
 
 $("#btn-del").click(function() {
@@ -122,27 +124,6 @@ $("#btn-del").click(function() {
 });
 
 function GeneratePassword(length, special) {
-    /*
-    var iteration = 0;
-    var password = "";
-    var randomNumber;
-    if(special == undefined){
-        var special = false;
-    }
-    while(iteration < length){
-        randomNumber = (Math.floor((Math.random() * 100)) % 94) + 33;
-        if(!special){
-            if ((randomNumber >=33) && (randomNumber <=47)) { continue; }
-            if ((randomNumber >=58) && (randomNumber <=64)) { continue; }
-            if ((randomNumber >=91) && (randomNumber <=96)) { continue; }
-            if ((randomNumber >=123) && (randomNumber <=126)) { continue; }
-        }
-        iteration++;
-        password += String.fromCharCode(randomNumber);
-    }
-    return password;
-    */
-
     if(special == undefined)
         var special = 0;
     if(special == 0) {

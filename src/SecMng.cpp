@@ -105,13 +105,12 @@ namespace secmng {
                     //Get secret information request.
                     mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
                     struct Session s;
-                    std::cout << "Get accounts" << std::endl;
                     if(!(mng->login)->GetSession(hm, s)) {
                         mg_printf_http_chunk(nc, "{\"result\":0}");
                     } else {
                         string ret = "{\"result\":1, \"accounts\": [";
                         std::list<struct Account> acnts;
-                        if((mng->acntMng)->GetAccounts(acnts)) {
+                        if((mng->acntMng)->GetAccounts(acnts, s.flag)) {
                             for(std::list<struct Account>::iterator iter = acnts.begin();
                                     iter != acnts.end(); ++iter) {
                                 struct Account acnt = *iter; 
@@ -135,7 +134,7 @@ namespace secmng {
                     if(!(mng->login)->GetSession(hm, s)) {
                         mg_printf_http_chunk(nc, "{\"result\":0}");
                     } else {
-                        if((mng->acntMng)->SaveAccount(hm)) {
+                        if((mng->acntMng)->SaveAccount(hm, s.flag)) {
                             mg_printf_http_chunk(nc, "{\"result\":1}");
                         } else {
                             mg_printf_http_chunk(nc, "{\"result\":0}");
@@ -149,7 +148,7 @@ namespace secmng {
                     if(!(mng->login)->GetSession(hm, s)) {
                         mg_printf_http_chunk(nc, "{\"result\":0}");
                     } else {
-                        if((mng->acntMng)->DelAccount(hm)) {
+                        if((mng->acntMng)->DelAccount(hm, s.flag)) {
                             std::cout << "Delete Success" << std::endl;
                             mg_printf_http_chunk(nc, "{\"result\":1}");
                         } else {

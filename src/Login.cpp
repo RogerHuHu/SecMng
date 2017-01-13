@@ -38,7 +38,7 @@ namespace secmng {
     bool Login::HandleLogin(const struct http_message *hm, struct Session &s) {
         struct UserInfo usrInfo;
         if(CheckPassword(hm, &usrInfo)) {
-            s = CreateSession(hm, usrInfo.username);
+            s = CreateSession(hm, usrInfo.username, usrInfo.flag);
             return true;
         }
         return false;
@@ -50,7 +50,6 @@ namespace secmng {
     bool Login::ExtractUserInfo(const struct http_message *hm, std::string &username,
             std::string &password) {
         std::string httpMsg(hm->body.p);
-        std::cout << httpMsg << std::endl;
 
         char *_username, *_password;
         std::string fmt = "{" + m_usernameFlag + ":%Q," +
@@ -64,8 +63,6 @@ namespace secmng {
         free(_username);
         free(_password);
 
-        std::cout << username << std::endl;
-            
         return true;
     }
 
@@ -92,7 +89,7 @@ namespace secmng {
      * Creates a new session for user.
      */
     struct Session Login::CreateSession(const struct http_message *hm,
-            const std::string &username) {
+            const std::string &username, int flag) {
         //Find first available slot or use the oldest one.
         struct Session newS;
         std::list<struct Session>::iterator oldestIter;
@@ -111,6 +108,7 @@ namespace secmng {
         newS.created = mg_time();
         newS.username = username;
         newS.luckyNumber = rand();
+        newS.flag = flag;
         //Create an ID by putting various volatiles into a pot and stirring.
         cs_sha1_ctx ctx;
         cs_sha1_init(&ctx);
@@ -167,6 +165,7 @@ namespace secmng {
                 iter != sessions.end(); ++iter) {
             if(iter->id == sid) {
                 iter->lastUsed = mg_time();
+                std::cout << "update lastUsed" << std::endl;
                 s = *iter;
                 return true;
             }

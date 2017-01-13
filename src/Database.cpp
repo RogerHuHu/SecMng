@@ -91,8 +91,9 @@ namespace database {
 
         sqlite3_bind_text(stmt, 1, usrInfo.username.c_str(), 
                 usrInfo.username.size(), SQLITE_STATIC);
-        sqlite3_bind_text(stmt, 2, usrInfo.password.c_str(),
-                usrInfo.password.size(), SQLITE_STATIC);
+        std::string encPassword = aes->EncryptString(usrInfo.password);
+        sqlite3_bind_text(stmt, 2, encPassword.c_str(),
+                encPassword.size(), SQLITE_STATIC);
         sqlite3_bind_int(stmt, 3, usrInfo.priority); 
         sqlite3_bind_int(stmt, 4, usrInfo.flag); 
 
@@ -133,8 +134,9 @@ namespace database {
             usrInfo->username = sqlRet != "" ? sqlRet : "NULL";
             sqlRet = (const char *)sqlite3_column_text(stmt, 1);
             usrInfo->password = sqlRet != "" ? sqlRet : "NULL";
+            usrInfo->password = aes->DecryptString(usrInfo->password);
             usrInfo->priority = sqlite3_column_int(stmt, 2);
-            usrInfo->flag = sqlite3_column_int(stmt, 2);
+            usrInfo->flag = sqlite3_column_int(stmt, 3);
         }
         
         if(stmt)
@@ -167,17 +169,12 @@ namespace database {
     /**
      * Insert account to sqlite database.
      */
-    bool Database::InsertAccount(const struct Account &acnt) {
+    bool Database::InsertAccount(const struct Account &acnt, int flag) {
         char *errMsg = 0;
         sqlite3_stmt *stmt;
 
-        std::string sqlCmd = "INSERT INTO accounts(Target,Username,Password"
-               ") VALUES(?,?,?)"; 
-        /*
-        WHERE Target='" + acnt.target + 
-               "' AND Username='" + acnt.username + "';";
-               */
-        std::cout << sqlCmd << std::endl;
+        std::string sqlCmd = "INSERT INTO accounts(Flag,Target,Username,Password"
+               ") VALUES(?,?,?,?)"; 
 
         if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), 
                     &stmt, NULL) != SQLITE_OK) {
@@ -192,19 +189,14 @@ namespace database {
             return false;
         }
 
-
-        sqlite3_bind_text(stmt, 1, acnt.target.c_str(), 
+        sqlite3_bind_int(stmt, 1, flag);
+        sqlite3_bind_text(stmt, 2, acnt.target.c_str(), 
                 acnt.target.size(), SQLITE_STATIC);
-        sqlite3_bind_text(stmt, 2, acnt.username.c_str(),
+        sqlite3_bind_text(stmt, 3, acnt.username.c_str(),
                 acnt.username.size(), SQLITE_STATIC);
         std::string encPassword = aes->EncryptString(acnt.password);
-        std::cout << encPassword << std::endl;
-        sqlite3_bind_text(stmt, 3, encPassword.c_str(),
+        sqlite3_bind_text(stmt, 4, encPassword.c_str(),
                 encPassword.size(), SQLITE_STATIC);
-        std::cout << encPassword.c_str() << std::endl;
-        std::cout << encPassword.size() << std::endl;
-        std::string temp1 = aes->DecryptString(encPassword);
-        std::cout << temp1 << std::endl;
 
         if(sqlite3_step(stmt) != SQLITE_DONE) {
             sqlite3_finalize(stmt);
@@ -224,11 +216,12 @@ namespace database {
     /**
      * Get account from sqlite database.
      */
-    bool Database::GetAccount(std::list<struct Account> &acnts) {
+    bool Database::GetAccount(std::list<struct Account> &acnts, int flag) {
         sqlite3_stmt *stmt = NULL;
         std::string sqlRet;
         
-        std::string sqlCmd = "SELECT Id,Target,Username,Password FROM accounts;";
+        std::string sqlCmd = "SELECT Id,Target,Username,Password "
+            "FROM accounts WHERE Flag=" + std::to_string(flag) + ";";
         if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), &stmt,
                     NULL) != SQLITE_OK) {
             if(stmt)
@@ -245,10 +238,7 @@ namespace database {
             acnt.username = sqlRet != "" ? sqlRet : "NULL";
             sqlRet = (const char *)sqlite3_column_text(stmt, 3);
             acnt.password = sqlRet != "" ? sqlRet : "";
-            std::cout << acnt.password;
-            std::cout << "========================" << std::endl;
             acnt.password = aes->DecryptString(acnt.password);
-            std::cout << acnt.password << std::endl;
             acnts.push_back(acnt);
         }
         
@@ -261,11 +251,11 @@ namespace database {
     /**
      * Delete account from sqlite database.
      */
-    bool Database::DelAccount(const struct Account &acnt) {
+    bool Database::DelAccount(const struct Account &acnt, int flag) {
         sqlite3_stmt *stmt = NULL;
 
-        std::string sqlCmd = "DELETE FROM accounts WHERE Target=? AND Username=?;";
-        std::cout << sqlCmd << std::endl;
+        std::string sqlCmd = "DELETE FROM accounts WHERE Target=? AND Username=? "
+            "AND Flag=?;";
         if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), &stmt,
                     NULL) != SQLITE_OK) {
             if(stmt)
@@ -277,6 +267,7 @@ namespace database {
                 SQLITE_STATIC);
         sqlite3_bind_text(stmt, 2, acnt.username.c_str(), acnt.username.size(),
                 SQLITE_STATIC);
+        sqlite3_bind_int(stmt, 3, flag);
         int ret = sqlite3_step(stmt);
         sqlite3_finalize(stmt);
 

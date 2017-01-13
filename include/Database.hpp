@@ -38,6 +38,7 @@ namespace database {
         std::string target;
         std::string username;
         std::string password;
+        int flag;
     };
 
     /**
@@ -100,28 +101,31 @@ namespace database {
          * \brief Insert account to sqlite database.
          *
          * \param acnt  Account information structure.
+         * \param flag  User flag.
          *
          * \return Insert result true/false.
          */
-        bool InsertAccount(const struct Account &acnt);
+        bool InsertAccount(const struct Account &acnt, int flag);
 
         /**
          * \brief Get account from sqlite database.
          *
          * \param acnt  Account information structure.
+         * \param flag  User flag.
          *
          * \return Database select result true/false.
          */
-        bool GetAccount(std::list<struct Account> &acnts);
+        bool GetAccount(std::list<struct Account> &acnts, int flag);
 
         /**
          * \brief Delete account from sqlite database.
          *
          * \param acnt  Account information structure.
+         * \param flag  User flag.
          *
          * \return Database delete result true/false.
          */
-        bool DelAccount(const struct Account &acnt);
+        bool DelAccount(const struct Account &acnt, int flag);
     private:
         std::string m_dbPath;
         sqlite3 *m_db;
