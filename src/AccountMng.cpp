@@ -14,10 +14,12 @@
 
 namespace secmng {
     //Ctor
-    AccountMng::AccountMng(const std::string targetFlag,
-            const std::string usernameFlag,
-            const std::string passwordFlag) : 
-        m_targetFlag(targetFlag), m_usernameFlag(usernameFlag),
+    AccountMng::AccountMng(const std::string &typeFlag,
+            const std::string &targetFlag,
+            const std::string &usernameFlag,
+            const std::string &passwordFlag) : 
+        m_typeFlag(typeFlag), m_targetFlag(targetFlag),
+        m_usernameFlag(usernameFlag),
         m_passwordFlag(passwordFlag) {
         ptMatch = new PatternMatch();
         db = new Database("../db/secmng.db");
@@ -48,13 +50,19 @@ namespace secmng {
     bool AccountMng::SaveAccount(const struct http_message *hm, int flag) {
         struct Account acnt;
         bool retVal = false;
-        ExtractAccount(hm, acnt);
+        int type;
+        ExtractAccount(hm, acnt, type);
+        /*
+        std::cout << "Operate type = " << type << std::endl;
         std::cout << acnt.target << std::endl;
         std::cout << acnt.username << std::endl;
         std::cout << acnt.password << std::endl;
+        */
         if(db->SqliteOpen()) {
-            if(db->InsertAccount(acnt, flag))
-                retVal = true;
+            if(type == 0)
+                retVal = db->InsertAccount(acnt, flag);
+            else if(type == 1)
+                retVal = db->UpdateAccount(acnt, flag);
             db->SqliteClose();
         }
         return retVal;
@@ -66,7 +74,8 @@ namespace secmng {
     bool AccountMng::DelAccount(const struct http_message *hm, int flag) {
         struct Account acnt;
         bool retVal = false;
-        ExtractAccount(hm, acnt);
+        int type;
+        ExtractAccount(hm, acnt, type);
         if(db->SqliteOpen()) {
             if(db->DelAccount(acnt, flag))
                 retVal = true;
@@ -79,16 +88,16 @@ namespace secmng {
      * Extract username and password from request HTTP message.
      */
     bool AccountMng::ExtractAccount(const struct http_message *hm,
-            struct Account &acnt) {
+            struct Account &acnt, int &type) {
         std::string httpMsg((hm->body).p);
         std::cout << httpMsg << std::endl;
 
         char *target, *username, *password;
-        std::string fmt = "{" + m_targetFlag + ":%Q," +
+        std::string fmt = "{" + m_typeFlag + ":%d," + m_targetFlag + ":%Q," +
             m_usernameFlag + ":%Q," + m_passwordFlag + ":%Q}";
-        std::cout << fmt << std::endl;
+        //std::cout << fmt << std::endl;
         json_scanf(httpMsg.c_str(), httpMsg.size(), fmt.c_str(),
-                &target, &username, &password);
+                &type, &target, &username, &password);
         acnt.target = target;
         acnt.username = username;
         acnt.password = password;

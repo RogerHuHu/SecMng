@@ -28,7 +28,7 @@ namespace secmng {
         m_delSecsPrefix = MG_MK_STR("/SecMng/DelSecrets");
 
         login = new Login("username", "password", 10, 300.0);
-        acntMng = new AccountMng("target", "username", "password");
+        acntMng = new AccountMng("type", "target", "username", "password");
     }
 
     //Dtor

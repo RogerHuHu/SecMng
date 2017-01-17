@@ -108,6 +108,16 @@ namespace database {
         bool InsertAccount(const struct Account &acnt, int flag);
 
         /**
+         * \brief Update account to sqlite database.
+         *
+         * \param acnt  Account information structure.
+         * \param flag  User flag.
+         *
+         * \return Insert result true/false.
+         */
+        bool UpdateAccount(const struct Account &acnt, int flag);
+
+        /**
          * \brief Get account from sqlite database.
          *
          * \param acnt  Account information structure.

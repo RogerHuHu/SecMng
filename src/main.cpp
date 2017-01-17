@@ -1,11 +1,12 @@
 #include "SecMng.hpp"
 #include "Database.hpp"
+#include <iostream>
 
 using namespace secmng;
 using namespace database;
 
 int main(void) {
-    SecMng *sec = new SecMng("8000", "../web_root");
+    SecMng *sec = new SecMng("9001", "../web_root");
     sec->SetInstance(sec);
     sec->Init();
     sec->Run(1000);

@@ -21,6 +21,7 @@ function GetSecrets() {
                     $clone.children("td").get(0).innerHTML = ret.accounts[i].target;
                     $clone.children("td").get(1).innerHTML = ret.accounts[i].username;
                     $clone.children("td").get(2).innerHTML = ret.accounts[i].password;
+                    $clone.children('td').eq(3).children('button').eq(1).attr("disabled", "true");
                     $('#tbody-test').append($clone);
                 }
             }
@@ -31,35 +32,53 @@ function GetSecrets() {
 var $tableClone;
 var $rowClone;
 var addFlag = 0;
+var saveFlag = 0;
+var editFlag = 0;
 
 $(function() {
     //新增账号
     $('#btn-add-account').click(function() {
-        $rowClone = $('#tbody-test').find('tr.hide').clone(true).removeClass("hide odd");
-        $('#modal-account').modal('show');
-        addFlag = 1;
+        if(editFlag == 0) {
+            $rowClone = $('#tbody-test').find('tr.hide').clone(true).removeClass("hide odd");
+            $tableClone = $rowClone.children('td');
+            $('#modal-account').modal('show');
+            addFlag = 1;
+        } else {
+            alert("请先保存之前的更改");
+        }
     });
 });
 
 $("#btn-edit").click(function() {
-    $tableClone = $(this).parents('tr').children('td');
-    $('#modal-text-target').val($tableClone.get(0).innerText);
-    $('#modal-text-username').val($tableClone.get(1).innerText);
-    $('#modal-text-password').val($tableClone.get(2).innerText);
-    $('#modal-account').modal('show');
+    if(editFlag == 0) {
+        $rowClone = $(this).parents('tr');
+        $tableClone = $(this).parents('tr').children('td');
+        $('#modal-text-target').val($tableClone.get(0).innerText);
+        $('#modal-text-username').val($tableClone.get(1).innerText);
+        $('#modal-text-password').val($tableClone.get(2).innerText);
+        $('#modal-account').modal('show');
+    } else {
+        alert("请先保存之前的更改");
+    }
 });
 
 $('#modal-btn-check').click(function() {
+//    editFlag = 1;
+    $tableClone.eq(3).children('button').eq(1).removeAttr("disabled");
     if(addFlag == 0) {
         $tableClone.get(0).innerText = $('#modal-text-target').val().trim();
         $tableClone.get(1).innerText = $('#modal-text-username').val().trim();
         $tableClone.get(2).innerText = $('#modal-text-password').val().trim();
+        $rowClone.attr("opttype", "1");
+        saveFlag = 1;
     } else if(addFlag == 1) {
         $rowClone.children('td').get(0).innerText = $('#modal-text-target').val().trim();
         $rowClone.children('td').get(1).innerText = $('#modal-text-username').val().trim();
         $rowClone.children('td').get(2).innerText = $('#modal-text-password').val().trim();
+        $rowClone.attr("opttype", "0");
         $('#tbody-test').prepend($rowClone);
         addFlag = 0;
+        saveFlag = 0;
     }
     $('#modal-account').modal('hide');
 });
@@ -67,9 +86,11 @@ $('#modal-btn-check').click(function() {
 $("#btn-check").click(function() {
     if(confirm("是否保存")) {
         var jsObj = {};
-        jsObj.target = $(this).parents('tr').children("td").get(0).innerText;
-        jsObj.username = $(this).parents('tr').children("td").get(1).innerText;
-        jsObj.password = $(this).parents('tr').children("td").get(2).innerText;
+        var tdObj = $(this).parents('tr').children('td');
+        jsObj.type = parseInt($(this).parents('tr').attr("opttype"));
+        jsObj.target = tdObj.get(0).innerText;
+        jsObj.username = tdObj.get(1).innerText;
+        jsObj.password = tdObj.get(2).innerText;
 
         $.ajax({
             url: '/SecMng/SaveSecrets',
@@ -78,6 +99,8 @@ $("#btn-check").click(function() {
             dataType: 'json',
             success: function(ret) {
                 if(ret.result == 1) {
+                    tdObj.eq(3).children('button').eq(1).attr("disabled", "true");
+                    editFlag = 0;
                     alert("保存成功");
                 } else {
                     alert("保存失败");
@@ -89,7 +112,8 @@ $("#btn-check").click(function() {
 
 
 $("#btn-refresh").click(function() {
-    $tableClone = $(this).parents('tr').children('td');
+    $rowClone = $(this).parents('tr');
+    $tableClone = $rowClone.children('td');
     $('#modal-password-rule').modal('show');
     $modal.modal('show');
 });
@@ -97,6 +121,9 @@ $("#btn-refresh").click(function() {
 $('#modal-password-rule-btn-check').click(function() {
     var length = $('#modal-text-length').val();
     var type = $("input[name='option-radio-inline']:checked").val();
+    if($rowClone.attr("opttype") != "0")
+        $rowClone.attr("opttype", "1");
+    $tableClone.eq(3).children('button').eq(1).removeAttr("disabled");
     $tableClone.get(2).innerText = GeneratePassword(parseInt(length), parseInt(type));
     $('#modal-password-rule').modal('hide');
 });

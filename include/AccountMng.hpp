@@ -27,9 +27,9 @@ namespace secmng {
     class AccountMng {
     public:
         //Ctor
-        AccountMng(const std::string targetFlag,
-                const std::string usernameFlag, 
-                const std::string passwordFlag);
+        AccountMng(const std::string &typeFlag,const std::string &targetFlag,
+                const std::string &usernameFlag, 
+                const std::string &passwordFlag);
 
         //Dtor
         ~AccountMng();
@@ -69,10 +69,12 @@ namespace secmng {
          *
          * \param hm    Http message.
          * \param acnt  Account information structure.
+         * \param type  Operate type insert or update.
          *
          * \return Account extract result.
          */
-        bool ExtractAccount(const struct http_message *hm, struct Account &acnt);
+        bool ExtractAccount(const struct http_message *hm, struct Account &acnt,
+                int &type);
 
         /**
          * \brief Extract account's id from request http message.
@@ -82,6 +84,7 @@ namespace secmng {
          */
         bool ExtractId(const struct http_message *hm, struct Account &acnt);
 
+        std::string m_typeFlag;
         std::string m_targetFlag;
         std::string m_usernameFlag;
         std::string m_passwordFlag;

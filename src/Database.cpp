@@ -214,6 +214,50 @@ namespace database {
     }
 
     /**
+     * Update account to sqlite database.
+     */
+    bool Database::UpdateAccount(const struct Account &acnt, int flag) {
+        char *errMsg = 0;
+        sqlite3_stmt *stmt;
+
+        //std::string sqlCmd = "INSERT INTO accounts(Flag,Target,Username,Password"
+        //       ") VALUES(?,?,?,?)"; 
+        std::string sqlCmd = "UPDATE accounts SET Password=? WHERE Target='" +
+            acnt.target + "' AND Username='" + acnt.username + "';";
+
+        if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), 
+                    &stmt, NULL) != SQLITE_OK) {
+            std::cout << sqlite3_errmsg(m_db) << std::endl;
+            return false;
+        }
+
+        if(sqlite3_exec(m_db, "BEGIN;", NULL, NULL, &errMsg) != SQLITE_OK) {
+            std::cout << "BEGIN" << std::endl;
+            std::cout << errMsg << std::endl;
+            sqlite3_free(errMsg);
+            return false;
+        }
+
+        std::string encPassword = aes->EncryptString(acnt.password);
+        sqlite3_bind_text(stmt, 1, encPassword.c_str(),
+                encPassword.size(), SQLITE_STATIC);
+
+        if(sqlite3_step(stmt) != SQLITE_DONE) {
+            sqlite3_finalize(stmt);
+            return false;
+        }
+
+        if(sqlite3_exec(m_db, "COMMIT;", NULL, NULL, &errMsg) != SQLITE_OK) {
+            std::cout << "COMMIT" << std::endl;
+            std::cout << errMsg << std::endl;
+            sqlite3_free(errMsg);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Get account from sqlite database.
      */
     bool Database::GetAccount(std::list<struct Account> &acnts, int flag) {

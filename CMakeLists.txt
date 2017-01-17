@@ -11,13 +11,17 @@ OPTION(CROSS "ON for cross-compiler, OFF for normal-compiler" OFF)
 IF(CROSS)
     MESSAGE(STATUS "CROSS COMPILING")
     SET(CMAKE_CROSSCOMPILING TRUE)
-    SET(CMAKE_C_COMPILER "/opt/gcc-4.4.4-glibc-2.11.1-multilib-1.0/arm-fsl-linux-gnueabi/bin/arm-none-linux-gnueabi-gcc")
-    SET(CMAKE_CXX_COMPILER "/opt/gcc-4.4.4-glibc-2.11.1-multilib-1.0/arm-fsl-linux-gnueabi/bin/arm-none-linux-gnueabi-g++")
+    #SET(CMAKE_C_COMPILER "/opt/gcc-4.4.4-glibc-2.11.1-multilib-1.0/arm-fsl-linux-gnueabi/bin/arm-none-linux-gnueabi-gcc")
+    #SET(CMAKE_CXX_COMPILER "/opt/gcc-4.4.4-glibc-2.11.1-multilib-1.0/arm-fsl-linux-gnueabi/bin/arm-none-linux-gnueabi-g++")
+    SET(CMAKE_C_COMPILER "/home/roger/Compiler/Raspberry/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-gcc")
+    SET(CMAKE_CXX_COMPILER "/home/roger/Compiler/Raspberry/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-g++")
     SET(CMAKE_C_FLAGS_DEBUG "-g -Wall")
-    SET(CMAKE_CXX_FLAGS_DEBUG "-g -Wall")
-    SET(CMAKE_C_FLAGS_RELEASE "-s -O2 -Wall -msoft-float -mfpu=vfp3")
-    SET(CMAKE_CXX_FLAGS_RELEASE "-s -O2 -Wall -msoft-float -mfpu=vfp3")
-    SET(CMAKE_FIND_ROOT_PATH "/opt/gcc-4.4.4-glibc-2.11.1-multilib-1.0/arm-fsl-linux-gnueabi/")
+    SET(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -std=c++11")
+    SET(CMAKE_C_FLAGS_RELEASE "-s -O2 -Wall")
+    SET(CMAKE_CXX_FLAGS_RELEASE "-s -Wall -std=c++11")
+    SET(CMAKE_LD "/home/roger/Compiler/Raspberry/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-ld")
+    #SET(CMAKE_FIND_ROOT_PATH "/opt/gcc-4.4.4-glibc-2.11.1-multilib-1.0/arm-fsl-linux-gnueabi/")
+    SET(CMAKE_FIND_ROOT_PATH "/home/roger/Compiler/Raspberry/gcc-linaro-arm-linux-gnueabihf-raspbian/")
     SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
     SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
     SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
@@ -40,9 +44,10 @@ ENDIF(DEBUG)
 
 INCLUDE_DIRECTORIES(${SECMNG_SOURCE_DIR}/include
                     ${SECMNG_SOURCE_DIR}/include/mongoose
-                    ${SECMNG_SOURCE_DIR}/include/frozen)
+                    ${SECMNG_SOURCE_DIR}/include/frozen
+                    /home/roger/Software/sqlite_rpi/include)
 
-#LINK_DIRECTORIES(${SECMNG_SOURCE_DIR}/lib)
+LINK_DIRECTORIES(/home/roger/Software/sqlite_rpi/lib/)
 
 SET(SRC_LIST
     include/mongoose/mongoose.h
@@ -55,6 +60,7 @@ SET(SRC_LIST
     src/AESResource.cpp
     include/AesEncryptor.hpp
     src/AesEncryptor
+    /home/roger/Software/sqlite_rpi/include/sqlite3.h
 #    src/big_upload.c)
 #    src/server.c)
     include/SecMng.hpp
