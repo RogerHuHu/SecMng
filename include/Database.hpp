@@ -42,6 +42,17 @@ namespace database {
     };
 
     /**
+     * \brief Database select conditions.
+     */
+    struct Condition {
+        int orderClm;
+        std::string orderDir;
+        std::string startIdx;
+        std::string length;
+        std::string searchVal;
+    };
+
+    /**
      * \brief This class is used to operate database.
      */
     class Database {
@@ -121,11 +132,16 @@ namespace database {
          * \brief Get account from sqlite database.
          *
          * \param acnt  Account information structure.
+         * \param recordsTotal
+         * \param recordsFiltered
+         * \param cond
          * \param flag  User flag.
          *
          * \return Database select result true/false.
          */
-        bool GetAccount(std::list<struct Account> &acnts, int flag);
+        bool GetAccount(std::list<struct Account> &acnts, 
+                int &recordsTotal, int &recordsFiltered, struct Condition cond,
+                int flag);
 
         /**
          * \brief Delete account from sqlite database.
@@ -137,6 +153,16 @@ namespace database {
          */
         bool DelAccount(const struct Account &acnt, int flag);
     private:
+        /**
+         * \brief Get the record's number in database.
+         *
+         * \param searchVal  Database filtering rule.
+         * \param flag       User flag.
+         *
+         * \return The record's number.
+         */
+        int GetRecordNum(const std::string &searchVal, int flag);
+
         std::string m_dbPath;
         sqlite3 *m_db;
 

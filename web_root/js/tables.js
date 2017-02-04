@@ -13,30 +13,46 @@ $(document).ready(function() {
             "sNext": "后一页",
             "sLast": "尾页"
             }
-        }
-    });
+        },
+        "processing": true,
+        "serverSide": true,
 
-    GetSecrets();
+        "sAjaxSource": "/SecMng/GetSecrets",
+        "fnServerData": function(reqUrl, aoData, fnCallback, settings) {
+            GetSecrets(reqUrl, aoData, fnCallback, settings);
+        },
+
+        "columns": [
+            {"data": "target"},
+            {"data": "username"},
+            {"data": "password"},
+            {"data": null}
+        ],
+
+        "columnDefs": [
+            {
+                "targets": 3,
+                "defaultContent": "<button type='button' id='btn-edit' class='btn btn-success btn-circle'><i class='fa fa-edit'></i></button>" + 
+                                  "<button type='button' id='btn-check' class='btn btn-info btn-circle' disabled='true'><i class='fa fa-check'></i></button>" +
+                                  "<button type='button' id='btn-refresh' class='btn btn-primary btn-circle'><i class='fa fa-refresh'></i></button>" +
+                                  "<button type='button' id='btn-del' class='btn btn-danger btn-circle'><i class='fa fa-trash-o'></i></button>"
+            }
+        ]
+    });
 });
 
-function GetSecrets() {
+function GetSecrets(reqUrl, aoData, fnCallback, settings) {
     $.ajax({
-        url: '/SecMng/GetSecrets',
-        type: 'POST',
-        dataType: 'json',
-        success: function(ret) {
+        "url": reqUrl,
+        "type": "POST",
+        "data": aoData,
+        "dataType": "json",
+        "success": function(ret) {
             if(ret.result == 0) {
-                alert("重新请登录!");
-                window.location.href='../html/login.html';
-            } else if(ret.result == 1){
-                for(var i = 0; i < ret.accounts.length; i++) {
-                    var $clone = $('#tbody-test').find('tr.hide').clone(true).removeClass("hide odd");
-                    $clone.children("td").get(0).innerHTML = ret.accounts[i].target;
-                    $clone.children("td").get(1).innerHTML = ret.accounts[i].username;
-                    $clone.children("td").get(2).innerHTML = ret.accounts[i].password;
-                    $clone.children('td').eq(3).children('button').eq(1).attr("disabled", "true");
-                    $('#tbody-test').append($clone);
-                }
+                alert("请重新登录！");
+                window.location.href = "../html/login.html";
+            } else if(ret.result == 1) {
+                fnCallback(ret);
             }
         }
     });
@@ -52,17 +68,46 @@ $(function() {
     //新增账号
     $('#btn-add-account').click(function() {
         if(editFlag == 0) {
-            $rowClone = $('#tbody-test').find('tr.hide').clone(true).removeClass("hide odd");
-            $tableClone = $rowClone.children('td');
-            $('#modal-account').modal('show');
             addFlag = 1;
+            $('#modal-account').modal('show');
         } else {
             alert("请先保存之前的更改");
         }
     });
 });
 
-$("#btn-edit").click(function() {
+$('#modal-btn-check').click(function() {
+    var table = $('#dataTables-example').DataTable();
+    if(confirm("是否保存")) {
+        var jsObj = {};
+        jsObj.type = (addFlag == 0) ? 1 : 0;
+        jsObj.target = $('#modal-text-target').val().trim();
+        jsObj.username = $('#modal-text-username').val().trim();
+        jsObj.password = $('#modal-text-password').val().trim();
+
+        $.ajax({
+            url: '/SecMng/SaveSecrets',
+            type: 'POST',
+            data: JSON.stringify(jsObj),
+            dataType: 'json',
+            success: function(ret) {
+                addFlag = 0;
+                if(ret.result == 1) {
+                    editFlag = 0;
+                    alert("保存成功");
+                    $('#dataTables-example').DataTable().ajax.reload();
+                } else {
+                    alert("请重新登录！");
+                    window.location.href = "../html/login.html";
+                }
+            },
+        });
+    }
+
+    $('#modal-account').modal('hide');
+});
+
+$('#dataTables-example').on('click', 'tbody tr td #btn-edit', function() {
     if(editFlag == 0) {
         $rowClone = $(this).parents('tr');
         $tableClone = $(this).parents('tr').children('td');
@@ -75,28 +120,7 @@ $("#btn-edit").click(function() {
     }
 });
 
-$('#modal-btn-check').click(function() {
-//    editFlag = 1;
-    $tableClone.eq(3).children('button').eq(1).removeAttr("disabled");
-    if(addFlag == 0) {
-        $tableClone.get(0).innerText = $('#modal-text-target').val().trim();
-        $tableClone.get(1).innerText = $('#modal-text-username').val().trim();
-        $tableClone.get(2).innerText = $('#modal-text-password').val().trim();
-        $rowClone.attr("opttype", "1");
-        saveFlag = 1;
-    } else if(addFlag == 1) {
-        $rowClone.children('td').get(0).innerText = $('#modal-text-target').val().trim();
-        $rowClone.children('td').get(1).innerText = $('#modal-text-username').val().trim();
-        $rowClone.children('td').get(2).innerText = $('#modal-text-password').val().trim();
-        $rowClone.attr("opttype", "0");
-        $('#tbody-test').prepend($rowClone);
-        addFlag = 0;
-        saveFlag = 0;
-    }
-    $('#modal-account').modal('hide');
-});
-
-$("#btn-check").click(function() {
+$('#dataTables-example').on('click', 'tbody tr td #btn-check', function() {
     if(confirm("是否保存")) {
         var jsObj = {};
         var tdObj = $(this).parents('tr').children('td');
@@ -115,33 +139,24 @@ $("#btn-check").click(function() {
                     tdObj.eq(3).children('button').eq(1).attr("disabled", "true");
                     editFlag = 0;
                     alert("保存成功");
+                    $('#dataTables-example').DataTable().ajax.reload();
                 } else {
-                    alert("保存失败");
+                    alert("请重新登录！");
+                    window.location.href = "../html/login.html";
                 }
             },
         });
     }
 });
 
-
-$("#btn-refresh").click(function() {
+$('#dataTables-example').on('click', 'tbody tr td #btn-refresh', function() {
     $rowClone = $(this).parents('tr');
     $tableClone = $rowClone.children('td');
     $('#modal-password-rule').modal('show');
     $modal.modal('show');
 });
 
-$('#modal-password-rule-btn-check').click(function() {
-    var length = $('#modal-text-length').val();
-    var type = $("input[name='option-radio-inline']:checked").val();
-    if($rowClone.attr("opttype") != "0")
-        $rowClone.attr("opttype", "1");
-    $tableClone.eq(3).children('button').eq(1).removeAttr("disabled");
-    $tableClone.get(2).innerText = GeneratePassword(parseInt(length), parseInt(type));
-    $('#modal-password-rule').modal('hide');
-});
-
-$("#btn-del").click(function() {
+$('#dataTables-example').on('click', 'tbody tr td #btn-del', function() {
     if(confirm("是否删除")) {
         var $clone = $(this).parents('tr');
         var jsObj = {};
@@ -156,11 +171,24 @@ $("#btn-del").click(function() {
             dataType: 'json',
             success: function(ret) {
                 if(ret.result == 1) {
-                    $clone.detach();
+                    $('#dataTables-example').DataTable().ajax.reload();
+                } else {
+                    alert("请重新登录！");
+                    window.location.href = "../html/login.html";
                 }
             },
         });
     }
+});
+
+$('#modal-password-rule-btn-check').click(function() {
+    var length = $('#modal-text-length').val();
+    var type = $("input[name='option-radio-inline']:checked").val();
+    if($rowClone.attr("opttype") != "0")
+        $rowClone.attr("opttype", "1");
+    $tableClone.eq(3).children('button').eq(1).removeAttr("disabled");
+    $tableClone.get(2).innerText = GeneratePassword(parseInt(length), parseInt(type));
+    $('#modal-password-rule').modal('hide');
 });
 
 function GeneratePassword(length, special) {

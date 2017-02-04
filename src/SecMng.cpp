@@ -29,6 +29,7 @@ namespace secmng {
 
         login = new Login("username", "password", 10, 300.0);
         acntMng = new AccountMng("type", "target", "username", "password");
+        ptMatch = new PatternMatch();
     }
 
     //Dtor
@@ -36,6 +37,8 @@ namespace secmng {
         mg_mgr_free(&m_mgr);
 
         delete login;
+        delete acntMng;
+        delete ptMatch;
     }
 
     /**
@@ -108,9 +111,37 @@ namespace secmng {
                     if(!(mng->login)->GetSession(hm, s)) {
                         mg_printf_http_chunk(nc, "{\"result\":0}");
                     } else {
-                        string ret = "{\"result\":1, \"accounts\": [";
+                        string req = hm->uri.p;
+                        char dst[req.size()];
+                        mg_url_decode(req.c_str(), req.size(), dst, req.size(), 0);
+                        req = dst;
+                        //string draw = mng->ExtractParam(req, "draw=");
+                        string draw = mng->ExtractParam(req, "sEcho=");
+                        struct Condition cond;
+                        //string orderClm = mng->ExtractParam(req, "order[0][column]=");
+                        string orderClm = mng->ExtractParam(req, "iSortCol_0=");
+                        cond.orderClm = atoi(orderClm.c_str());
+                        //cond.orderDir = mng->ExtractParam(req, "order[0][dir]=");
+                        cond.orderDir = mng->ExtractParam(req, "sSortDir_0=");
+                        //cond.startIdx = mng->ExtractParam(req, "start=");
+                        cond.startIdx = mng->ExtractParam(req, "iDisplayStart=");
+                        //cond.length = mng->ExtractParam(req, "length=");
+                        cond.length = mng->ExtractParam(req, "iDisplayLength=");
+                        //cond.searchVal = mng->ExtractParam(req, "search[value]=");
+                        cond.searchVal = mng->ExtractParam(req, "sSearch=");
+                        string ret = "{\"result\":1, ";
+                        ret += "\"draw\":" + draw + ", ";
+
+                        int recordsTotal = 0;
+                        int recordsFiltered = 0;
                         std::list<struct Account> acnts;
-                        if((mng->acntMng)->GetAccounts(acnts, s.flag)) {
+                        if((mng->acntMng)->GetAccounts(acnts, recordsTotal,
+                                    recordsFiltered, cond, s.flag)) {
+                            ret += "\"recordsTotal\":" +
+                                    std::to_string(recordsTotal) + ", " +
+                                    "\"recordsFiltered\":" +
+                                    std::to_string(recordsFiltered) + ", " +
+                                    "\"data\": [";
                             for(std::list<struct Account>::iterator iter = acnts.begin();
                                     iter != acnts.end(); ++iter) {
                                 struct Account acnt = *iter; 
@@ -121,9 +152,11 @@ namespace secmng {
                                     "\", \"username\":\"" + acnt.username +
                                     "\", \"password\":\"" + acnt.password + "\"},";
                             }
+                            ret = ret.substr(0, ret.size() - 1);
+                            ret += "]}";
+                        } else {
+                            ret += "\"recordsTotal\":0, \"recordsFiltered\":0, \"data\":[]}";
                         }
-                        ret = ret.substr(0, ret.size() - 1);
-                        ret += "]}";
                         mg_printf_http_chunk(nc, "%s", ret.c_str());
                     }
                     mg_send_http_chunk(nc, "", 0);
@@ -159,19 +192,19 @@ namespace secmng {
                 } else {
                     mg_serve_http(nc, hm, mng->m_httpServerOpts);
                 }
-            }
-            break;
+                                     }
+                                     break;
             case MG_EV_SSI_CALL:
-                mng->HandleSSICall(nc, (const char *)evData);
-                break;
+                                     mng->HandleSSICall(nc, (const char *)evData);
+                                     break;
             case MG_EV_TIMER: {
-                //Perform session maintenance.
-                (mng->login)->CheckSession();
-                mg_set_timer(nc, mg_time() + (mng->login)->GetSessionChkIntv());
-                break;
-            }
+                                  //Perform session maintenance.
+                                  (mng->login)->CheckSession();
+                                  mg_set_timer(nc, mg_time() + (mng->login)->GetSessionChkIntv());
+                                  break;
+                              }
             default:
-                break;
+                              break;
         }
     }
 
@@ -214,5 +247,23 @@ namespace secmng {
         if(uri->len >= prefix->len && memcmp(uri->p, prefix->p, prefix->len) == 0)
             return true;
         return false;
+    }
+
+    /**
+     * Extracts parameters from specific strings.
+     */
+    std::string SecMng::ExtractParam(const std::string &str,
+            const std::string &model) {
+        ptMatch->CaculateFail(model);         
+        int index1 = ptMatch->Match(str, model);
+        if(index1 <= 0)
+            return "";
+        ptMatch->CaculateFail("&");
+        int index2 = ptMatch->Match(str.substr(index1, str.size() - index1), "&");
+
+        if(index2 <= 0)
+            return "";
+        else
+            return str.substr(index1, index2 - 1);
     }
 }

@@ -38,11 +38,16 @@ namespace secmng {
          * \brief Get accounts from database. 
          *
          * \param acnts  Account information structure list.
+         * \param recordsTotal     Total record number in database.
+         * \param recordsFiltered  The record number meets the requirement.
+         * \param cond             Database select conditions.
          * \param flag   User flag.
          *
          * \return Get accounts result true/false.
          */
-        bool GetAccounts(std::list<struct Account> &acnts, int flag);
+        bool GetAccounts(std::list<struct Account> &acnts, 
+                int &recordsTotal, int &recordsFiltered, struct Condition cond,
+                int flag);
 
         /**
          * \brief Save account to database. 

@@ -34,10 +34,13 @@ namespace secmng {
     /**
      * Get accounts from database.
      */
-    bool AccountMng::GetAccounts(std::list<struct Account> &acnts, int flag) {
+    bool AccountMng::GetAccounts(std::list<struct Account> &acnts, 
+            int &recordsTotal, int &recordsFiltered, struct Condition cond,
+            int flag) {
         bool retVal = false;
         if(db->SqliteOpen()) {
-            if(db->GetAccount(acnts, flag))
+            if(db->GetAccount(acnts, recordsTotal, recordsFiltered,
+                        cond, flag))
                 retVal = true;
             db->SqliteClose();
         }

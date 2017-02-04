@@ -15,6 +15,7 @@
 #include "mongoose.h"
 #include "Login.hpp"
 #include "AccountMng.hpp"
+#include "PatternMatch.hpp"
 
 using std::string;
 
@@ -85,6 +86,15 @@ namespace secmng {
          */
         bool HasPrefix(const struct mg_str *uri, const struct mg_str *prefix);
 
+        /**
+         * \brief Extracts parameters from specific strings.
+         * 
+         * \param str    Input string.
+         * \param model  Model string.
+         */
+        std::string ExtractParam(const std::string &str,
+                const std::string &model);
+
         std::string m_httpPort;
         std::string m_webRootDir;
         struct mg_mgr m_mgr;
@@ -99,6 +109,7 @@ namespace secmng {
 
         Login *login;
         AccountMng *acntMng;
+        PatternMatch *ptMatch;
     };
 }
 

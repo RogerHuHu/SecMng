@@ -260,12 +260,41 @@ namespace database {
     /**
      * Get account from sqlite database.
      */
-    bool Database::GetAccount(std::list<struct Account> &acnts, int flag) {
+    bool Database::GetAccount(std::list<struct Account> &acnts,
+            int &recordsTotal, int &recordsFiltered, struct Condition cond,
+            int flag) {
+        recordsTotal = GetRecordNum("", flag);
+        recordsFiltered = GetRecordNum(cond.searchVal, flag);
         sqlite3_stmt *stmt = NULL;
         std::string sqlRet;
         
+        std::string orderSqlCmd;
+        switch(cond.orderClm) {
+            case 0 : 
+                orderSqlCmd = " ORDER BY Target " + cond.orderDir;
+                break;
+            case 1 :
+                orderSqlCmd = " ORDER BY Username " + cond.orderDir;
+                break;
+            case 2 : 
+                orderSqlCmd = " ORDER BY Password " + cond.orderDir;
+            default :
+                orderSqlCmd = "";
+                break;
+        }
+
+        std::string searchSqlCmd;
+        if(cond.searchVal == "") {
+            searchSqlCmd = "";
+        } else {
+            searchSqlCmd = " AND Target LIKE '%" + cond.searchVal + "%' ";
+        }
+
+        std::string limitSqlCmd = " LIMIT " + cond.length + " OFFSET " + cond.startIdx;
+
         std::string sqlCmd = "SELECT Id,Target,Username,Password "
-            "FROM accounts WHERE Flag=" + std::to_string(flag) + ";";
+            "FROM accounts WHERE Flag=" + std::to_string(flag) + searchSqlCmd +
+            orderSqlCmd + limitSqlCmd + ";";
         if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), &stmt,
                     NULL) != SQLITE_OK) {
             if(stmt)
@@ -318,5 +347,36 @@ namespace database {
         if(ret == SQLITE_DONE || ret == SQLITE_ROW)
             return true;
         return false;
+    }
+
+    /**
+     * Get the record's number in database.
+     */
+    int Database::GetRecordNum(const std::string &searchVal, int flag) {
+        sqlite3_stmt *stmt = NULL;
+        std::string sqlCmd;
+
+        if(searchVal == "") {
+            sqlCmd = "SELECT COUNT(*) FROM accounts WHERE Flag=" +
+                std::to_string(flag) + ";";
+        } else {
+            std::string rule = "'%" + searchVal + "%'";
+            sqlCmd = "SELECT COUNT(*) FROM accounts WHERE Target LIKE " +
+                rule + " AND Flag=" + std::to_string(flag) + ";";
+        }
+
+        if(sqlite3_prepare_v2(m_db, sqlCmd.c_str(), sqlCmd.size(), &stmt,
+                    NULL) != SQLITE_OK) {
+            if(stmt)
+                sqlite3_finalize(stmt);
+            return -1;
+        }
+
+        int recordNum = -1;
+        while(sqlite3_step(stmt) == SQLITE_ROW)
+           recordNum = sqlite3_column_int(stmt, 0); 
+        sqlite3_finalize(stmt);
+
+        return recordNum;
     }
 }
