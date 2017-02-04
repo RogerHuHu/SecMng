@@ -44,10 +44,10 @@ ENDIF(DEBUG)
 
 INCLUDE_DIRECTORIES(${SECMNG_SOURCE_DIR}/include
                     ${SECMNG_SOURCE_DIR}/include/mongoose
-                    ${SECMNG_SOURCE_DIR}/include/frozen
-                    /home/roger/Software/sqlite_rpi/include)
+                    ${SECMNG_SOURCE_DIR}/include/frozen)
+                    #    /home/roger/Software/sqlite_rpi/include)
 
-LINK_DIRECTORIES(/home/roger/Software/sqlite_rpi/lib/)
+                #LINK_DIRECTORIES(/home/roger/Software/sqlite_rpi/lib/)
 
 SET(SRC_LIST
     include/mongoose/mongoose.h
@@ -60,7 +60,7 @@ SET(SRC_LIST
     src/AESResource.cpp
     include/AesEncryptor.hpp
     src/AesEncryptor
-    /home/roger/Software/sqlite_rpi/include/sqlite3.h
+#    /home/roger/Software/sqlite_rpi/include/sqlite3.h
 #    src/big_upload.c)
 #    src/server.c)
     include/SecMng.hpp
