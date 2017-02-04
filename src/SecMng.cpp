@@ -112,22 +112,19 @@ namespace secmng {
                         mg_printf_http_chunk(nc, "{\"result\":0}");
                     } else {
                         string req = hm->uri.p;
+                        (mng->ptMatch)->CaculateFail("\r\n\r\n");
+                        int idx = (mng->ptMatch)->Match(req, "\r\n\r\n");
+                        req = req.substr(idx, req.size() - idx - 1);
                         char dst[req.size()];
-                        mg_url_decode(req.c_str(), req.size(), dst, req.size(), 0);
+                        mg_url_decode(req.c_str(), req.size(), dst, req.size(), 1);
                         req = dst;
-                        //string draw = mng->ExtractParam(req, "draw=");
                         string draw = mng->ExtractParam(req, "sEcho=");
                         struct Condition cond;
-                        //string orderClm = mng->ExtractParam(req, "order[0][column]=");
                         string orderClm = mng->ExtractParam(req, "iSortCol_0=");
                         cond.orderClm = atoi(orderClm.c_str());
-                        //cond.orderDir = mng->ExtractParam(req, "order[0][dir]=");
                         cond.orderDir = mng->ExtractParam(req, "sSortDir_0=");
-                        //cond.startIdx = mng->ExtractParam(req, "start=");
                         cond.startIdx = mng->ExtractParam(req, "iDisplayStart=");
-                        //cond.length = mng->ExtractParam(req, "length=");
                         cond.length = mng->ExtractParam(req, "iDisplayLength=");
-                        //cond.searchVal = mng->ExtractParam(req, "search[value]=");
                         cond.searchVal = mng->ExtractParam(req, "sSearch=");
                         string ret = "{\"result\":1, ";
                         ret += "\"draw\":" + draw + ", ";

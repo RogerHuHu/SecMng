@@ -62,7 +62,7 @@ function setCookie(name, value, expiretime) {
     var exp = new Date();
     exp.setTime(exp.getTime() + strsec * 1);
     document.cookie = name + "=" + escape(value) + 
-        ";expires=" + exp.toGMTString() + ";path=/";
+        ";expires=" + exp.toGMTString() + ";path=SetMng/";
 }
 
 function getsec(str) {
