@@ -2,3 +2,4 @@ build/
 include/crypt
 src/crypt
 web.tar.gz
+src/AESResource.cpp
