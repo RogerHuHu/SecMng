@@ -12,8 +12,8 @@
 #define DATABASE_HPP_H
 
 #include <string>
-#include <sqlite3.h>
 #include <list>
+#include "sqlite3.h"
 #include "AesEncryptor.hpp"
 #include "AESResource.hpp"
 
