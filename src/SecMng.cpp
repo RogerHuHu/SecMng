@@ -109,7 +109,7 @@ namespace secmng {
                     mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
                     struct Session s;
                     if(!(mng->login)->GetSession(hm, s)) {
-                        mg_printf_http_chunk(nc, "{\"result\":0}");
+                        mg_printf_http_chunk(nc, "{\"result\":-1}");
                     } else {
                         string req = hm->uri.p;
                         (mng->ptMatch)->CaculateFail("\r\n\r\n");
@@ -162,7 +162,7 @@ namespace secmng {
                     mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
                     struct Session s;
                     if(!(mng->login)->GetSession(hm, s)) {
-                        mg_printf_http_chunk(nc, "{\"result\":0}");
+                        mg_printf_http_chunk(nc, "{\"result\":-1}");
                     } else {
                         if((mng->acntMng)->SaveAccount(hm, s.flag)) {
                             mg_printf_http_chunk(nc, "{\"result\":1}");
@@ -176,7 +176,7 @@ namespace secmng {
                     mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
                     struct Session s;
                     if(!(mng->login)->GetSession(hm, s)) {
-                        mg_printf_http_chunk(nc, "{\"result\":0}");
+                        mg_printf_http_chunk(nc, "{\"result\":-1}");
                     } else {
                         if((mng->acntMng)->DelAccount(hm, s.flag)) {
                             std::cout << "Delete Success" << std::endl;
@@ -189,19 +189,19 @@ namespace secmng {
                 } else {
                     mg_serve_http(nc, hm, mng->m_httpServerOpts);
                 }
-                                     }
-                                     break;
+            }
+            break;
             case MG_EV_SSI_CALL:
-                                     mng->HandleSSICall(nc, (const char *)evData);
-                                     break;
+                 mng->HandleSSICall(nc, (const char *)evData);
+            break;
             case MG_EV_TIMER: {
-                                  //Perform session maintenance.
-                                  (mng->login)->CheckSession();
-                                  mg_set_timer(nc, mg_time() + (mng->login)->GetSessionChkIntv());
-                                  break;
-                              }
+                //Perform session maintenance.
+                (mng->login)->CheckSession();
+                mg_set_timer(nc, mg_time() + (mng->login)->GetSessionChkIntv());
+            break;
+            }
             default:
-                              break;
+            break;
         }
     }
 
