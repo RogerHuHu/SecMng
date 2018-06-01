@@ -51,7 +51,7 @@ function GetSecrets(reqUrl, aoData, fnCallback, settings) {
             if(ret.result == -1) {
                 alert("请重新登录！");
                 window.location.href = "../html/login.html";
-            else if(ret.result == 0) {
+            } else if(ret.result == 0) {
                 alert("账号获取失败！");
             } else if(ret.result == 1) {
                 fnCallback(ret);
@@ -98,7 +98,7 @@ $('#modal-btn-check').click(function() {
                     editFlag = 0;
                     alert("保存成功");
                     $('#dataTables-example').DataTable().ajax.reload();
-                else if(ret.result == 0) {
+                } else if(ret.result == 0) {
                     alert("保存失败");
                     $('#dataTables-example').DataTable().ajax.reload();
                 } else {
@@ -145,7 +145,7 @@ $('#dataTables-example').on('click', 'tbody tr td #btn-check', function() {
                     editFlag = 0;
                     alert("保存成功");
                     $('#dataTables-example').DataTable().ajax.reload();
-                else if(ret.result == 0) {
+                } else if(ret.result == 0) {
                     alert("保存失败");
                     $('#dataTables-example').DataTable().ajax.reload();
                 } else {
@@ -180,10 +180,10 @@ $('#dataTables-example').on('click', 'tbody tr td #btn-del', function() {
             success: function(ret) {
                 if(ret.result == 1) {
                     $('#dataTables-example').DataTable().ajax.reload();
-                } else {
-                else if(ret.result == 0) {
+                } else if(ret.result == 0) {
                     alert("删除失败");
                     $('#dataTables-example').DataTable().ajax.reload();
+                } else {
                     alert("请重新登录！");
                     window.location.href = "../html/login.html";
                 }
