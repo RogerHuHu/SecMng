@@ -2,8 +2,6 @@ build/
 include/crypt
 src/crypt
 web.tar.gz
-src/AESResource.cpp
 *.db
 *.DS_Store
-include/AESResource.cpp
 *.swp
