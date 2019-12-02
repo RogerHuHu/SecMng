@@ -15,11 +15,12 @@ int main(void) {
     db->SqliteOpen();
     //db->CreateTableAccounts();
     struct UserInfo acnt;
-    acnt.username = "Hqqqqq";
-    acnt.password = "huqin52457";
-    acnt.priority = 2;
-    acnt.flag = 2;
+    acnt.username = "admin";
+    acnt.password = "12345";
+    acnt.priority = 1;
+    acnt.flag = 1;
     db->InsertUserInfo(acnt);
+    db->CreateTableAccouts();
     db->SqliteClose();
     */
 }
